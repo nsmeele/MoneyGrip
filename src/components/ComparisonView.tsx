@@ -34,7 +34,7 @@ export default function ComparisonView({ results, onRemove, onClear, portfolioId
     <div className="results-section">
       <div className="results-header">
         <h2>
-          Resultaten
+          Rekeningen
           <span className="results-count">{results.length}</span>
         </h2>
         <button className="btn-danger" onClick={onClear}>
