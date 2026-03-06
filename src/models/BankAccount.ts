@@ -1,7 +1,7 @@
-import { PayoutInterval } from '../enums/PayoutInterval';
+import { PayoutInterval, getPeriodsPerYear } from '../enums/PayoutInterval';
 import { InterestType } from '../enums/InterestType';
 import { type CashFlow, expandCashFlows } from './CashFlow';
-import { addMonthsToISO, todayISO, isBeforeDate } from '../utils/date';
+import { addMonthsToISO, todayISO, isBeforeDate, getNextQuarterStart, getNextMonthStart } from '../utils/date';
 
 export interface PeriodResult {
   period: number;
@@ -13,7 +13,7 @@ export interface PeriodResult {
   deposited: number;
 }
 
-export class InterestCalculationResult {
+export class BankAccount {
   public readonly id: string;
   public readonly timestamp: number;
 
@@ -71,6 +71,33 @@ export class InterestCalculationResult {
   get hasExpired(): boolean {
     if (this.isOngoing || !this.endDate) return false;
     return isBeforeDate(this.endDate, todayISO());
+  }
+
+  get nextPayoutDate(): string | undefined {
+    if (!this.startDate || this.hasExpired || this.hasNotStartedYet) return undefined;
+    if (this.interval === PayoutInterval.AtMaturity) return this.endDate;
+
+    const today = todayISO();
+
+    if (this.interval === PayoutInterval.Monthly) {
+      const next = getNextMonthStart(today);
+      if (this.endDate && !isBeforeDate(next, this.endDate)) return this.endDate;
+      return next;
+    }
+
+    if (this.interval === PayoutInterval.Quarterly) {
+      const next = getNextQuarterStart(today);
+      if (this.endDate && !isBeforeDate(next, this.endDate)) return this.endDate;
+      return next;
+    }
+
+    const monthsPerPeriod = 12 / getPeriodsPerYear(this.interval);
+    let payoutDate = addMonthsToISO(this.startDate, monthsPerPeriod);
+    while (isBeforeDate(payoutDate, today)) {
+      payoutDate = addMonthsToISO(payoutDate, monthsPerPeriod);
+    }
+    if (this.endDate && !isBeforeDate(payoutDate, this.endDate)) return this.endDate;
+    return payoutDate;
   }
 
   get label(): string {

@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { InterestCalculator } from '../calculator/InterestCalculator';
-import { InterestCalculationInput } from '../models/InterestCalculationInput';
+import { AccountCalculator } from '../calculator/AccountCalculator';
+import { BankAccountInput } from '../models/BankAccountInput';
 import { PayoutInterval } from '../enums/PayoutInterval';
 import { InterestType } from '../enums/InterestType';
 import type { CashFlow } from '../models/CashFlow';
 
-const calculator = new InterestCalculator();
+const calculator = new AccountCalculator();
 
-describe('InterestCalculator', () => {
+describe('AccountCalculator', () => {
   it('returns a result with correct input fields', () => {
-    const input = new InterestCalculationInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01');
+    const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01');
     const result = calculator.calculate(input);
 
     expect(result.startAmount).toBe(10000);
@@ -25,7 +25,7 @@ describe('InterestCalculator', () => {
     const cashFlows: CashFlow[] = [{
       id: '1', date: '2025-06-01', amount: 1000, description: 'Storting',
     }];
-    const input = new InterestCalculationInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01', cashFlows);
+    const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01', cashFlows);
     const result = calculator.calculate(input);
 
     expect(result.cashFlows).toEqual(cashFlows);
@@ -35,7 +35,7 @@ describe('InterestCalculator', () => {
     const cashFlows: CashFlow[] = [{
       id: '1', date: '2025-04-15', amount: 5000, description: 'Storting',
     }];
-    const input = new InterestCalculationInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01', cashFlows);
+    const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01', cashFlows);
     const result = calculator.calculate(input);
 
     // April = month offset 3 from January, so period 4
@@ -50,7 +50,7 @@ describe('InterestCalculator', () => {
     const cashFlows: CashFlow[] = [{
       id: '1', date: '2025-07-01', amount: 2000, description: 'Storting',
     }];
-    const input = new InterestCalculationInput(10000, 5, 12, PayoutInterval.Quarterly, InterestType.Compound, '2025-01-01', cashFlows);
+    const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Quarterly, InterestType.Compound, '2025-01-01', cashFlows);
     const result = calculator.calculate(input);
 
     // July = month offset 6, quarterly monthsPerPeriod = 3, so period = floor(6/3)+1 = 3
@@ -62,7 +62,7 @@ describe('InterestCalculator', () => {
       { id: '1', date: '2024-06-01', amount: 1000, description: 'Te vroeg' },
       { id: '2', date: '2026-06-01', amount: 1000, description: 'Te laat' },
     ];
-    const input = new InterestCalculationInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01', cashFlows);
+    const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01', cashFlows);
     const result = calculator.calculate(input);
 
     const totalDeposited = result.periods.reduce((sum, p) => sum + p.deposited, 0);
@@ -74,7 +74,7 @@ describe('InterestCalculator', () => {
       id: '1', date: '2025-01-01', amount: 100, description: 'Maandelijks',
       recurring: { intervalMonths: 1 },
     }];
-    const input = new InterestCalculationInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01', cashFlows);
+    const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01', cashFlows);
     const result = calculator.calculate(input);
 
     // Each month should have a deposit of 100
@@ -87,11 +87,86 @@ describe('InterestCalculator', () => {
     const cashFlows: CashFlow[] = [{
       id: '1', date: '2025-06-01', amount: 5000, description: 'Storting',
     }];
-    const input = new InterestCalculationInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, undefined, cashFlows);
+    const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, undefined, cashFlows);
     const result = calculator.calculate(input);
 
     const totalDeposited = result.periods.reduce((sum, p) => sum + p.deposited, 0);
     expect(totalDeposited).toBe(0);
+  });
+
+  describe('monthly fixed calendar dates', () => {
+    it('snaps monthly periods to 1st of each month', () => {
+      const input = new BankAccountInput(10000, 5, 3, PayoutInterval.Monthly, InterestType.Compound, '2025-01-15');
+      const result = calculator.calculate(input);
+
+      // Jan 15 → Feb 1 (short), Feb 1 → Mar 1, Mar 1 → Apr 1, Apr 1 → Apr 15 (short)
+      expect(result.periods).toHaveLength(4);
+    });
+
+    it('produces 12 equal periods when starting on 1st of month', () => {
+      const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound, '2025-01-01');
+      const result = calculator.calculate(input);
+
+      expect(result.periods).toHaveLength(12);
+    });
+
+    it('gives each period the same interest regardless of calendar length', () => {
+      const input = new BankAccountInput(10000, 5, 3, PayoutInterval.Monthly, InterestType.Compound, '2025-01-15');
+      const result = calculator.calculate(input);
+
+      const fullMonthInterest = 10000 * 0.05 / 12;
+      expect(result.periods[0].interestEarned).toBeCloseTo(fullMonthInterest, 2);
+    });
+
+    it('works without startDate (falls back to equal periods)', () => {
+      const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Monthly, InterestType.Compound);
+      const result = calculator.calculate(input);
+
+      expect(result.periods).toHaveLength(12);
+    });
+  });
+
+  describe('quarterly fixed calendar dates', () => {
+    it('snaps quarterly periods to Jan/Apr/Jul/Oct boundaries', () => {
+      const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Quarterly, InterestType.Compound, '2025-02-15');
+      const result = calculator.calculate(input);
+
+      // Feb 15 → Apr 1 (short), Apr 1 → Jul 1, Jul 1 → Oct 1, Oct 1 → Jan 1, Jan 1 → Feb 15 (short)
+      expect(result.periods).toHaveLength(5);
+    });
+
+    it('produces 4 equal periods when starting on a quarter boundary', () => {
+      const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Quarterly, InterestType.Compound, '2025-01-01');
+      const result = calculator.calculate(input);
+
+      expect(result.periods).toHaveLength(4);
+    });
+
+    it('gives each period the same interest regardless of calendar length', () => {
+      const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Quarterly, InterestType.Compound, '2025-02-15');
+      const result = calculator.calculate(input);
+
+      const fullQuarterInterest = 10000 * 0.05 / 4;
+      expect(result.periods[0].interestEarned).toBeCloseTo(fullQuarterInterest, 2);
+    });
+
+    it('maps cash flow to correct fixed-date period', () => {
+      const cashFlows: CashFlow[] = [{
+        id: '1', date: '2025-05-01', amount: 3000, description: 'Storting',
+      }];
+      const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Quarterly, InterestType.Compound, '2025-02-15', cashFlows);
+      const result = calculator.calculate(input);
+
+      // May 1 falls in period Apr 1 → Jul 1 (period 2)
+      expect(result.periods[1].deposited).toBe(3000);
+    });
+
+    it('works without startDate (falls back to equal periods)', () => {
+      const input = new BankAccountInput(10000, 5, 12, PayoutInterval.Quarterly, InterestType.Compound);
+      const result = calculator.calculate(input);
+
+      expect(result.periods).toHaveLength(4);
+    });
   });
 
   describe('ongoing account with cash flow', () => {
@@ -99,7 +174,7 @@ describe('InterestCalculator', () => {
       const cashFlows: CashFlow[] = [{
         id: '1', date: '2025-04-01', amount: 3000, description: 'Extra storting',
       }];
-      const input = new InterestCalculationInput(
+      const input = new BankAccountInput(
         10000, 4, 6, PayoutInterval.Monthly, InterestType.Compound,
         '2025-01-01', cashFlows, true,
       );
@@ -117,14 +192,14 @@ describe('InterestCalculator', () => {
     });
 
     it('increases interest after a deposit', () => {
-      const withoutCashFlow = new InterestCalculationInput(
+      const withoutCashFlow = new BankAccountInput(
         10000, 4, 6, PayoutInterval.Monthly, InterestType.Compound,
         '2025-01-01', [], true,
       );
       const cashFlows: CashFlow[] = [{
         id: '1', date: '2025-02-01', amount: 5000, description: 'Storting',
       }];
-      const withCashFlow = new InterestCalculationInput(
+      const withCashFlow = new BankAccountInput(
         10000, 4, 6, PayoutInterval.Monthly, InterestType.Compound,
         '2025-01-01', cashFlows, true,
       );
@@ -141,7 +216,7 @@ describe('InterestCalculator', () => {
       const cashFlows: CashFlow[] = [{
         id: '1', date: '2024-06-01', amount: 1000, description: 'Storting',
       }];
-      const input = new InterestCalculationInput(
+      const input = new BankAccountInput(
         10000, 3, 18, PayoutInterval.Monthly, InterestType.Compound,
         '2024-01-01', cashFlows, true,
       );
@@ -153,7 +228,7 @@ describe('InterestCalculator', () => {
 
     it('preserves isOngoing when recalculating with new cash flows', () => {
       // Simulate initial ongoing calculation without cash flows
-      const initial = new InterestCalculationInput(
+      const initial = new BankAccountInput(
         10000, 4, 6, PayoutInterval.Monthly, InterestType.Compound,
         '2025-01-01', [], true,
       );
@@ -165,7 +240,7 @@ describe('InterestCalculator', () => {
       const newCashFlows: CashFlow[] = [{
         id: '1', date: '2025-03-01', amount: 2000, description: 'Storting',
       }];
-      const recalcInput = new InterestCalculationInput(
+      const recalcInput = new BankAccountInput(
         initialResult.startAmount,
         initialResult.annualInterestRate,
         initialResult.durationMonths,
@@ -198,7 +273,7 @@ describe('InterestCalculator', () => {
         { id: '3', date: '2026-03-03', amount: -10000, description: 'Opname' },
         { id: '4', date: '2026-03-05', amount: -25000, description: 'Opname' },
       ];
-      const input = new InterestCalculationInput(
+      const input = new BankAccountInput(
         5000, 1.92, 2, PayoutInterval.Monthly, InterestType.Compound,
         '2026-01-10', cashFlows, true,
       );
@@ -213,7 +288,7 @@ describe('InterestCalculator', () => {
         id: '1', date: '2025-01-01', amount: 200, description: 'Maandelijks',
         recurring: { intervalMonths: 1 },
       }];
-      const input = new InterestCalculationInput(
+      const input = new BankAccountInput(
         5000, 4, 6, PayoutInterval.Monthly, InterestType.Compound,
         '2025-01-01', cashFlows, true,
       );

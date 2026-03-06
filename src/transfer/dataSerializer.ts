@@ -1,8 +1,8 @@
-import type { InterestCalculationResult } from '../models/InterestCalculationResult';
+import type { BankAccount } from '../models/BankAccount';
 import type { ExportFile, ExportedResult } from '../models/ExportFile';
 import { EXPORT_FORMAT_VERSION } from '../models/ExportFile';
 
-export function toExportedResult(r: InterestCalculationResult): ExportedResult {
+export function toExportedResult(r: BankAccount): ExportedResult {
   return {
     id: r.id,
     timestamp: r.timestamp,
@@ -19,7 +19,7 @@ export function toExportedResult(r: InterestCalculationResult): ExportedResult {
 }
 
 export function serializeToExportFile(
-  results: InterestCalculationResult[],
+  results: BankAccount[],
   portfolioIds: Set<string>,
 ): ExportFile {
   return {

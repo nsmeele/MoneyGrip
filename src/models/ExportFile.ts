@@ -1,6 +1,6 @@
 import type { PayoutInterval } from '../enums/PayoutInterval';
 import type { InterestType } from '../enums/InterestType';
-import type { PeriodResult } from './InterestCalculationResult';
+import type { PeriodResult } from './BankAccount';
 import type { CashFlow } from './CashFlow';
 
 export const EXPORT_FORMAT_VERSION = 1;

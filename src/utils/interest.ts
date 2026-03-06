@@ -1,8 +1,8 @@
-import type { InterestCalculationResult } from '../models/InterestCalculationResult';
+import type { BankAccount } from '../models/BankAccount';
 import { PayoutInterval, getPeriodsPerYear } from '../enums/PayoutInterval';
 import { getYear, getMonth } from './date';
 
-export function interestPerMonth(result: InterestCalculationResult): number {
+export function interestPerMonth(result: BankAccount): number {
   if (result.durationMonths === 0) return 0;
   return result.totalInterest / result.durationMonths;
 }
@@ -16,7 +16,7 @@ function addMonths(year: number, month: number, count: number): [number, number]
   return [Math.floor(total / 12), total % 12];
 }
 
-function projectToCalendarMonths(result: InterestCalculationResult): Map<string, number> {
+function projectToCalendarMonths(result: BankAccount): Map<string, number> {
   const map = new Map<string, number>();
   if (!result.startDate) return map;
 
@@ -83,7 +83,7 @@ function fillMonthGaps(keys: string[]): string[] {
   return all;
 }
 
-export function buildPortfolioChartData(items: InterestCalculationResult[]): ChartDataPoint[] {
+export function buildPortfolioChartData(items: BankAccount[]): ChartDataPoint[] {
   const withDates = items.filter((r) => r.startDate);
   if (withDates.length === 0) return [];
 

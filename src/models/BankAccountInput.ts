@@ -2,7 +2,7 @@ import { PayoutInterval } from '../enums/PayoutInterval';
 import { InterestType } from '../enums/InterestType';
 import type { CashFlow } from './CashFlow';
 
-export class InterestCalculationInput {
+export class BankAccountInput {
   constructor(
     public readonly startAmount: number,
     public readonly annualInterestRate: number,

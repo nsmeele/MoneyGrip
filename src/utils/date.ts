@@ -1,4 +1,4 @@
-import { parseISO, differenceInMonths, addMonths as dfnsAddMonths, format, isBefore } from 'date-fns';
+import { parseISO, differenceInMonths, differenceInDays, addMonths as dfnsAddMonths, format, isBefore } from 'date-fns';
 
 export function parseDate(iso: string): Date {
   return parseISO(iso);
@@ -34,4 +34,27 @@ export function getYear(iso: string): number {
 
 export function getMonth(iso: string): number {
   return parseISO(iso).getMonth();
+}
+
+export function daysBetween(startISO: string, endISO: string): number {
+  return differenceInDays(parseISO(endISO), parseISO(startISO));
+}
+
+const QUARTER_MONTHS = [0, 3, 6, 9]; // Jan, Apr, Jul, Oct
+
+export function getNextQuarterStart(iso: string): string {
+  const date = parseISO(iso);
+  const month = date.getMonth();
+
+  for (const qm of QUARTER_MONTHS) {
+    if (qm > month) {
+      return toISO(new Date(date.getFullYear(), qm, 1));
+    }
+  }
+  return toISO(new Date(date.getFullYear() + 1, 0, 1));
+}
+
+export function getNextMonthStart(iso: string): string {
+  const date = parseISO(iso);
+  return toISO(new Date(date.getFullYear(), date.getMonth() + 1, 1));
 }

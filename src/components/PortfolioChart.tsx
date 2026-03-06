@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { InterestCalculationResult } from '../models/InterestCalculationResult';
+import type { BankAccount } from '../models/BankAccount';
 import { buildPortfolioChartData } from '../utils/interest';
 import { formatCurrency } from '../utils/format';
 
@@ -22,7 +22,7 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 }
 
 interface PortfolioChartProps {
-  items: InterestCalculationResult[];
+  items: BankAccount[];
 }
 
 export default function PortfolioChart({ items }: PortfolioChartProps) {

@@ -1,22 +1,22 @@
 import { useState } from 'react';
 import { PayoutInterval, INTERVAL_LABELS } from '../enums/PayoutInterval';
 import { InterestType, INTEREST_TYPE_LABELS } from '../enums/InterestType';
-import { InterestCalculationInput } from '../models/InterestCalculationInput';
-import { InterestCalculator } from '../calculator/InterestCalculator';
-import type { InterestCalculationResult } from '../models/InterestCalculationResult';
+import { BankAccountInput } from '../models/BankAccountInput';
+import { AccountCalculator } from '../calculator/AccountCalculator';
+import type { BankAccount } from '../models/BankAccount';
 import { monthsBetween, todayISO } from '../utils/date';
 
-interface CalculatorFormProps {
-  onResult: (result: InterestCalculationResult) => void;
-  editingResult?: InterestCalculationResult | null;
+interface AccountFormProps {
+  onResult: (result: BankAccount) => void;
+  editingResult?: BankAccount | null;
   onCancelEdit?: () => void;
 }
 
-const calculator = new InterestCalculator();
+const calculator = new AccountCalculator();
 const intervals = Object.values(PayoutInterval);
 const interestTypes = Object.values(InterestType);
 
-export default function CalculatorForm({ onResult, editingResult, onCancelEdit }: CalculatorFormProps) {
+export default function AccountForm({ onResult, editingResult, onCancelEdit }: AccountFormProps) {
   const [startAmount, setStartAmount] = useState('10000');
   const [interestRate, setInterestRate] = useState('3.5');
   const [years, setYears] = useState('5');
@@ -95,10 +95,10 @@ export default function CalculatorForm({ onResult, editingResult, onCancelEdit }
     const amount = parseFloat(startAmount.replace(/\./g, '').replace(',', '.'));
     const rate = parseFloat(interestRate.replace(',', '.'));
     const durationMonths = isOngoing
-      ? Math.max(0, monthsBetween(startDate, todayISO()))
+      ? Math.max(1, monthsBetween(startDate, todayISO()))
       : hasDurationFromDates ? durationFromDates : parseInt(years) * 12 + parseInt(months || '0');
 
-    const input = new InterestCalculationInput(amount, rate, durationMonths, interval, interestType, startDate || undefined, editingResult?.cashFlows ?? [], isOngoing);
+    const input = new BankAccountInput(amount, rate, durationMonths, interval, interestType, startDate || undefined, editingResult?.cashFlows ?? [], isOngoing);
     const result = calculator.calculate(input);
     onResult(result);
   }

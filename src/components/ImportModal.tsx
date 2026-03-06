@@ -67,7 +67,7 @@ export default function ImportModal({ preview, onConfirm, onCancel }: ImportModa
             <div className="import-preview__stat">
               <span className="import-preview__stat-value">{preview.resultCount}</span>
               <span className="import-preview__stat-label">
-                {preview.resultCount === 1 ? 'berekening' : 'berekeningen'}
+                {preview.resultCount === 1 ? 'rekening' : 'rekeningen'}
               </span>
             </div>
             {preview.portfolioIdCount > 0 && (
@@ -105,7 +105,7 @@ export default function ImportModal({ preview, onConfirm, onCancel }: ImportModa
               />
               <div>
                 <span className="import-mode__option-title">Samenvoegen</span>
-                <span className="import-mode__option-desc">Nieuwe berekeningen worden toegevoegd aan je bestaande gegevens.</span>
+                <span className="import-mode__option-desc">Nieuwe rekeningen worden toegevoegd aan je bestaande gegevens.</span>
               </div>
             </label>
           </fieldset>

@@ -1,10 +1,10 @@
-import type { IInterestStrategy, BalanceAdjustments } from '../interfaces/IInterestStrategy';
-import type { InterestCalculationInput } from '../models/InterestCalculationInput';
-import type { PeriodResult } from '../models/InterestCalculationResult';
+import type { IInterestStrategy, BalanceAdjustments, PeriodScheduleEntry } from '../interfaces/IInterestStrategy';
+import type { BankAccountInput } from '../models/BankAccountInput';
+import type { PeriodResult } from '../models/BankAccount';
 import { PayoutInterval, getPeriodsPerYear } from '../enums/PayoutInterval';
 
 export class SimpleInterestStrategy implements IInterestStrategy {
-  calculate(input: InterestCalculationInput, adjustments: BalanceAdjustments = {}): PeriodResult[] {
+  calculate(input: BankAccountInput, adjustments: BalanceAdjustments = {}, schedule?: PeriodScheduleEntry[]): PeriodResult[] {
     if (input.interval === PayoutInterval.AtMaturity && !hasAdjustments(adjustments)) {
       const durationYears = input.durationMonths / 12;
       const interestEarned = input.startAmount * (input.annualInterestRate / 100) * durationYears;
@@ -18,6 +18,10 @@ export class SimpleInterestStrategy implements IInterestStrategy {
         endBalance: input.startAmount,
         deposited: 0,
       }];
+    }
+
+    if (schedule) {
+      return this.calculateWithSchedule(input, adjustments, schedule);
     }
 
     const periodsPerYear = input.interval === PayoutInterval.AtMaturity ? 12 : getPeriodsPerYear(input.interval);
@@ -37,6 +41,36 @@ export class SimpleInterestStrategy implements IInterestStrategy {
       periods.push({
         period: i,
         periodLabel: `Periode ${i}`,
+        startBalance: currentPrincipal,
+        interestEarned,
+        disbursed: interestEarned,
+        endBalance: currentPrincipal,
+        deposited,
+      });
+    }
+
+    return periods;
+  }
+
+  private calculateWithSchedule(input: BankAccountInput, adjustments: BalanceAdjustments, schedule: PeriodScheduleEntry[]): PeriodResult[] {
+    const periodsPerYear = getPeriodsPerYear(input.interval);
+    const interestFraction = input.annualInterestRate / 100 / periodsPerYear;
+    const periods: PeriodResult[] = [];
+    let currentPrincipal = input.startAmount;
+
+    for (let i = 0; i < schedule.length; i++) {
+      const entry = schedule[i];
+      const periodIndex = i + 1;
+
+      const adjustment = adjustments[periodIndex] ?? 0;
+      const deposited = Math.max(-currentPrincipal, adjustment);
+      currentPrincipal = Math.max(0, currentPrincipal + deposited);
+
+      const interestEarned = currentPrincipal * interestFraction;
+
+      periods.push({
+        period: periodIndex,
+        periodLabel: entry.label,
         startBalance: currentPrincipal,
         interestEarned,
         disbursed: interestEarned,

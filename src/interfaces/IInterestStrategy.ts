@@ -1,10 +1,16 @@
-import type { InterestCalculationInput } from '../models/InterestCalculationInput';
-import type { PeriodResult } from '../models/InterestCalculationResult';
+import type { BankAccountInput } from '../models/BankAccountInput';
+import type { PeriodResult } from '../models/BankAccount';
 
 export interface BalanceAdjustments {
   [periodIndex: number]: number;
 }
 
+export interface PeriodScheduleEntry {
+  label: string;
+  startDate: string;
+  endDate: string;
+}
+
 export interface IInterestStrategy {
-  calculate(input: InterestCalculationInput, adjustments?: BalanceAdjustments): PeriodResult[];
+  calculate(input: BankAccountInput, adjustments?: BalanceAdjustments, schedule?: PeriodScheduleEntry[]): PeriodResult[];
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SimpleInterestStrategy } from '../strategies/SimpleInterestStrategy';
-import { InterestCalculationInput } from '../models/InterestCalculationInput';
+import { BankAccountInput } from '../models/BankAccountInput';
 import { PayoutInterval } from '../enums/PayoutInterval';
 import { InterestType } from '../enums/InterestType';
 
@@ -12,7 +12,7 @@ function makeInput(overrides: {
   durationMonths?: number;
   interval?: PayoutInterval;
 } = {}) {
-  return new InterestCalculationInput(
+  return new BankAccountInput(
     overrides.startAmount ?? 10000,
     overrides.annualInterestRate ?? 5,
     overrides.durationMonths ?? 12,

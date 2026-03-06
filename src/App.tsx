@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import CalculatorForm from './components/CalculatorForm';
+import AccountForm from './components/AccountForm';
 import ComparisonView from './components/ComparisonView';
 import PortfolioSummary from './components/PortfolioSummary';
 import ImportModal from './components/ImportModal';
 import { useResultStorage } from './hooks/useResultStorage';
 import { usePortfolio } from './hooks/usePortfolio';
 import { useDataTransfer } from './hooks/useDataTransfer';
-import { InterestCalculator } from './calculator/InterestCalculator';
-import { InterestCalculationInput } from './models/InterestCalculationInput';
-import type { InterestCalculationResult } from './models/InterestCalculationResult';
+import { AccountCalculator } from './calculator/AccountCalculator';
+import { BankAccountInput } from './models/BankAccountInput';
+import type { BankAccount } from './models/BankAccount';
 import type { CashFlow } from './models/CashFlow';
 
 type MobileTab = 'form' | 'results' | 'portfolio';
@@ -18,13 +18,13 @@ export default function App() {
   const { results, addResult, updateResult, removeResult, clearResults, replaceResults, mergeResults } = useResultStorage();
   const { portfolioIds, togglePortfolio, clearPortfolio, replacePortfolio, mergePortfolio } = usePortfolio();
   const transfer = useDataTransfer(results, portfolioIds, replaceResults, mergeResults, replacePortfolio, mergePortfolio);
-  const [editingResult, setEditingResult] = useState<InterestCalculationResult | null>(null);
+  const [editingResult, setEditingResult] = useState<BankAccount | null>(null);
   const [activeTab, setActiveTab] = useState<MobileTab>('form');
   const [rightTab, setRightTab] = useState<RightPanelTab>('results');
 
   const hasPortfolio = results.some((r) => portfolioIds.has(r.id));
 
-  function handleResult(result: InterestCalculationResult) {
+  function handleResult(result: BankAccount) {
     if (editingResult) {
       updateResult(editingResult.id, result);
       setEditingResult(null);
@@ -34,7 +34,7 @@ export default function App() {
     setActiveTab('results');
   }
 
-  function handleEdit(result: InterestCalculationResult) {
+  function handleEdit(result: BankAccount) {
     setEditingResult(result);
     setActiveTab('form');
   }
@@ -43,8 +43,8 @@ export default function App() {
     const existing = results.find((r) => r.id === id);
     if (!existing) return;
 
-    const calc = new InterestCalculator();
-    const input = new InterestCalculationInput(
+    const calc = new AccountCalculator();
+    const input = new BankAccountInput(
       existing.startAmount,
       existing.annualInterestRate,
       existing.durationMonths,
@@ -105,7 +105,7 @@ export default function App() {
 
         <main className="main-layout">
           <div className={`main-panel${activeTab !== 'form' ? ' main-panel--hidden' : ''}`}>
-            <CalculatorForm
+            <AccountForm
               onResult={handleResult}
               editingResult={editingResult}
               onCancelEdit={() => setEditingResult(null)}

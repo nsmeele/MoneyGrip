@@ -1,28 +1,33 @@
 import { useState, useCallback } from 'react';
-import { InterestCalculationResult } from '../models/InterestCalculationResult';
+import { BankAccount } from '../models/BankAccount';
 import type { ExportedResult } from '../models/ExportFile';
 import { toExportedResult } from '../transfer/dataSerializer';
-import { InterestCalculationInput } from '../models/InterestCalculationInput';
-import { InterestCalculator } from '../calculator/InterestCalculator';
+import { BankAccountInput } from '../models/BankAccountInput';
+import { AccountCalculator } from '../calculator/AccountCalculator';
+import { monthsBetween, todayISO } from '../utils/date';
 
-const STORAGE_KEY = 'interest-calculator-results';
+const STORAGE_KEY = 'bank-account-results';
 
-const calc = new InterestCalculator();
+const calc = new AccountCalculator();
 
-function reconstructResult(item: ExportedResult): InterestCalculationResult {
+function reconstructResult(item: ExportedResult): BankAccount {
   const cashFlows = item.cashFlows ?? [];
   const isOngoing = item.isOngoing ?? false;
-  let result: InterestCalculationResult;
+  let result: BankAccount;
 
-  if (cashFlows.length > 0 && item.startDate) {
-    const input = new InterestCalculationInput(
-      item.startAmount, item.annualInterestRate, item.durationMonths,
+  const durationMonths = isOngoing && item.startDate
+    ? Math.max(1, monthsBetween(item.startDate, todayISO()))
+    : item.durationMonths;
+
+  if ((cashFlows.length > 0 && item.startDate) || (isOngoing && item.startDate)) {
+    const input = new BankAccountInput(
+      item.startAmount, item.annualInterestRate, durationMonths,
       item.interval, item.interestType, item.startDate, cashFlows, isOngoing,
     );
     result = calc.calculate(input);
   } else {
-    result = new InterestCalculationResult(
-      item.startAmount, item.annualInterestRate, item.durationMonths,
+    result = new BankAccount(
+      item.startAmount, item.annualInterestRate, durationMonths,
       item.interval, item.interestType, item.startDate, item.periods,
       cashFlows, isOngoing,
     );
@@ -32,7 +37,7 @@ function reconstructResult(item: ExportedResult): InterestCalculationResult {
   return result;
 }
 
-function loadFromStorage(): InterestCalculationResult[] {
+function loadFromStorage(): BankAccount[] {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) return [];
@@ -43,14 +48,14 @@ function loadFromStorage(): InterestCalculationResult[] {
   }
 }
 
-function saveToStorage(results: InterestCalculationResult[]): void {
+function saveToStorage(results: BankAccount[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(results.map(toExportedResult)));
 }
 
 export function useResultStorage() {
-  const [results, setResults] = useState<InterestCalculationResult[]>(loadFromStorage);
+  const [results, setResults] = useState<BankAccount[]>(loadFromStorage);
 
-  const addResult = useCallback((result: InterestCalculationResult) => {
+  const addResult = useCallback((result: BankAccount) => {
     setResults((prev) => {
       const updated = [result, ...prev];
       saveToStorage(updated);
@@ -58,7 +63,7 @@ export function useResultStorage() {
     });
   }, []);
 
-  const updateResult = useCallback((id: string, result: InterestCalculationResult) => {
+  const updateResult = useCallback((id: string, result: BankAccount) => {
     setResults((prev) => {
       const updated = prev.map((r) => {
         if (r.id !== id) return r;

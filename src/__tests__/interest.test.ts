@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { interestPerMonth, buildPortfolioChartData } from '../utils/interest';
-import { InterestCalculationResult } from '../models/InterestCalculationResult';
+import { BankAccount } from '../models/BankAccount';
 import { PayoutInterval } from '../enums/PayoutInterval';
 import { InterestType } from '../enums/InterestType';
-import type { PeriodResult } from '../models/InterestCalculationResult';
+import type { PeriodResult } from '../models/BankAccount';
 
 function makeResult(overrides: {
   startAmount?: number;
@@ -12,7 +12,7 @@ function makeResult(overrides: {
   interval?: PayoutInterval;
   startDate?: string;
   periods?: PeriodResult[];
-} = {}): InterestCalculationResult {
+} = {}): BankAccount {
   const durationMonths = overrides.durationMonths ?? 12;
   const periods = overrides.periods ?? Array.from({ length: durationMonths }, (_, i) => ({
     period: i + 1,
@@ -24,7 +24,7 @@ function makeResult(overrides: {
     deposited: 0,
   }));
 
-  return new InterestCalculationResult(
+  return new BankAccount(
     overrides.startAmount ?? 10000,
     overrides.annualInterestRate ?? 6,
     durationMonths,

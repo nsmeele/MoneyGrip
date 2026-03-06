@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { InterestCalculationResult } from '../models/InterestCalculationResult';
+import type { BankAccount } from '../models/BankAccount';
 import type { ExportFile, ExportedResult } from '../models/ExportFile';
 import { serializeToExportFile } from '../transfer/dataSerializer';
 import { downloadJson, readJsonFile } from '../transfer/fileIO';
@@ -14,7 +14,7 @@ export interface ImportPreview {
 }
 
 export function useDataTransfer(
-  results: InterestCalculationResult[],
+  results: BankAccount[],
   portfolioIds: Set<string>,
   replaceResults: (results: ExportedResult[]) => void,
   mergeResults: (results: ExportedResult[]) => void,

@@ -653,6 +653,10 @@ body {
   @apply bg-success-light;
 }
 
+.comparison-table .next-payout {
+  @apply block text-xs font-normal text-navy-400;
+}
+
 /* ─── Comparison Row ─── */
 .comparison-row {
   @apply cursor-pointer select-none transition-colors duration-150 hover:bg-copper-500/[0.04];

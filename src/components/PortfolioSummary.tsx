@@ -1,11 +1,11 @@
-import type { InterestCalculationResult } from '../models/InterestCalculationResult';
+import type { BankAccount } from '../models/BankAccount';
 import { INTERVAL_LABELS } from '../enums/PayoutInterval';
 import { formatCurrency } from '../utils/format';
 import { interestPerMonth } from '../utils/interest';
 import PortfolioChart from './PortfolioChart';
 
 interface PortfolioSummaryProps {
-  results: InterestCalculationResult[];
+  results: BankAccount[];
   portfolioIds: Set<string>;
   onToggle: (id: string) => void;
   onClear: () => void;

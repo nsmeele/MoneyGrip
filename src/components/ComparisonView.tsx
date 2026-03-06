@@ -1,5 +1,5 @@
 import { Fragment, useState, useRef } from 'react';
-import type { InterestCalculationResult } from '../models/InterestCalculationResult';
+import type { BankAccount } from '../models/BankAccount';
 import type { CashFlow } from '../models/CashFlow';
 import { INTERVAL_LABELS } from '../enums/PayoutInterval';
 import { INTEREST_TYPE_LABELS } from '../enums/InterestType';
@@ -7,12 +7,12 @@ import { formatCurrency, formatDurationShort, formatDate } from '../utils/format
 import CashFlowEditor from './CashFlowEditor';
 
 interface ComparisonViewProps {
-  results: InterestCalculationResult[];
+  results: BankAccount[];
   onRemove: (id: string) => void;
   onClear: () => void;
   portfolioIds: Set<string>;
   onTogglePortfolio: (id: string) => void;
-  onEdit: (result: InterestCalculationResult) => void;
+  onEdit: (result: BankAccount) => void;
   onUpdateCashFlows: (id: string, cashFlows: CashFlow[]) => void;
   onExport: () => void;
   onImportFile: (file: File) => Promise<void>;
@@ -35,8 +35,8 @@ export default function ComparisonView({ results, onRemove, onClear, portfolioId
     return (
       <div className="empty-state">
         <div className="empty-state-icon">+</div>
-        <h3>Nog geen berekeningen</h3>
-        <p>Maak je eerste berekening aan via het formulier. Je kunt meerdere rekeningen naast elkaar vergelijken.</p>
+        <h3>Nog geen rekeningen</h3>
+        <p>Maak je eerste rekening aan via het formulier. Je kunt meerdere rekeningen naast elkaar vergelijken.</p>
       </div>
     );
   }
@@ -133,6 +133,9 @@ export default function ComparisonView({ results, onRemove, onClear, portfolioId
                     </td>
                     <td className={`amount${isBest ? ' highlight-best' : ''}`}>
                       {formatCurrency(r.totalInterest)}
+                      {r.nextPayoutDate && (
+                        <span className="next-payout">{formatDate(r.nextPayoutDate)}</span>
+                      )}
                     </td>
                     <td className="amount">{formatCurrency(r.endAmount)}</td>
                     <td className="comparison-actions" onClick={(e) => e.stopPropagation()}>

@@ -59,44 +59,44 @@ function validateCashFlow(value: unknown, index: number): string | null {
 }
 
 function validateExportedResult(value: unknown, index: number): string | null {
-  if (!isObject(value)) return `Berekening ${index + 1}: geen geldig object.`;
+  if (!isObject(value)) return `Rekening ${index + 1}: geen geldig object.`;
   const r = value as Record<string, unknown>;
 
-  if (!isNonEmptyString(r.id)) return `Berekening ${index + 1}: 'id' ontbreekt.`;
-  if (!isFiniteNumber(r.timestamp) || r.timestamp <= 0) return `Berekening ${index + 1}: 'timestamp' is ongeldig.`;
-  if (!isFiniteNumber(r.startAmount) || r.startAmount < 0) return `Berekening ${index + 1}: 'startAmount' moet >= 0 zijn.`;
-  if (!isFiniteNumber(r.annualInterestRate) || r.annualInterestRate < 0) return `Berekening ${index + 1}: 'annualInterestRate' moet >= 0 zijn.`;
+  if (!isNonEmptyString(r.id)) return `Rekening ${index + 1}: 'id' ontbreekt.`;
+  if (!isFiniteNumber(r.timestamp) || r.timestamp <= 0) return `Rekening ${index + 1}: 'timestamp' is ongeldig.`;
+  if (!isFiniteNumber(r.startAmount) || r.startAmount < 0) return `Rekening ${index + 1}: 'startAmount' moet >= 0 zijn.`;
+  if (!isFiniteNumber(r.annualInterestRate) || r.annualInterestRate < 0) return `Rekening ${index + 1}: 'annualInterestRate' moet >= 0 zijn.`;
   if (!isFiniteNumber(r.durationMonths) || r.durationMonths < 0 || !Number.isInteger(r.durationMonths)) {
-    return `Berekening ${index + 1}: 'durationMonths' moet een geheel getal >= 0 zijn.`;
+    return `Rekening ${index + 1}: 'durationMonths' moet een geheel getal >= 0 zijn.`;
   }
   if (!PAYOUT_INTERVAL_VALUES.includes(r.interval as string)) {
-    return `Berekening ${index + 1}: 'interval' heeft een ongeldige waarde '${r.interval}'.`;
+    return `Rekening ${index + 1}: 'interval' heeft een ongeldige waarde '${r.interval}'.`;
   }
   if (!INTEREST_TYPE_VALUES.includes(r.interestType as string)) {
-    return `Berekening ${index + 1}: 'interestType' heeft een ongeldige waarde '${r.interestType}'.`;
+    return `Rekening ${index + 1}: 'interestType' heeft een ongeldige waarde '${r.interestType}'.`;
   }
   if (r.startDate !== undefined && (typeof r.startDate !== 'string' || !ISO_DATE_REGEX.test(r.startDate))) {
-    return `Berekening ${index + 1}: 'startDate' is geen geldige datum (YYYY-MM-DD).`;
+    return `Rekening ${index + 1}: 'startDate' is geen geldige datum (YYYY-MM-DD).`;
   }
 
   if (!Array.isArray(r.periods)) {
-    return `Berekening ${index + 1}: 'periods' moet een array zijn.`;
+    return `Rekening ${index + 1}: 'periods' moet een array zijn.`;
   }
   for (let i = 0; i < r.periods.length; i++) {
     const err = validatePeriodResult(r.periods[i], i);
-    if (err) return `Berekening ${index + 1} > ${err}`;
+    if (err) return `Rekening ${index + 1} > ${err}`;
   }
 
   if (r.cashFlows !== undefined) {
-    if (!Array.isArray(r.cashFlows)) return `Berekening ${index + 1}: 'cashFlows' moet een array zijn.`;
+    if (!Array.isArray(r.cashFlows)) return `Rekening ${index + 1}: 'cashFlows' moet een array zijn.`;
     for (let i = 0; i < r.cashFlows.length; i++) {
       const err = validateCashFlow(r.cashFlows[i], i);
-      if (err) return `Berekening ${index + 1} > ${err}`;
+      if (err) return `Rekening ${index + 1} > ${err}`;
     }
   }
 
   if (r.isOngoing !== undefined && typeof r.isOngoing !== 'boolean') {
-    return `Berekening ${index + 1}: 'isOngoing' moet een boolean zijn.`;
+    return `Rekening ${index + 1}: 'isOngoing' moet een boolean zijn.`;
   }
 
   return null;

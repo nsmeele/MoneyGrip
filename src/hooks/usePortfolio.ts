@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-const STORAGE_KEY = 'interest-calculator-portfolio';
+const STORAGE_KEY = 'bank-account-portfolio';
 
 function loadPortfolio(): Set<string> {
   try {
