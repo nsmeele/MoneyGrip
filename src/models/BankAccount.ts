@@ -45,7 +45,11 @@ export class BankAccount {
 
   get endAmount(): number {
     if (this.periods.length === 0) return this.startAmount;
-    return this.periods[this.periods.length - 1].endBalance;
+    const lastEndBalance = this.periods[this.periods.length - 1].endBalance;
+    if (this.interestType === InterestType.Simple) {
+      return lastEndBalance + this.totalInterest;
+    }
+    return lastEndBalance;
   }
 
   get totalDisbursed(): number {

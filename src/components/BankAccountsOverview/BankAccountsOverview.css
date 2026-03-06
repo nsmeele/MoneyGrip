@@ -101,6 +101,15 @@
   @apply p-0 border-b border-navy-100 dark:border-navy-700;
 }
 
+/* ─── Period Detail Status ─── */
+.period-detail-status {
+  @apply flex flex-wrap gap-x-6 gap-y-1 px-4 pt-4 text-sm text-navy-600 dark:text-navy-300 lg:px-5 lg:pt-5;
+}
+
+.period-detail-status__item strong {
+  @apply font-semibold text-navy-500 dark:text-navy-400;
+}
+
 /* ─── Period Detail Layout ─── */
 .period-detail-layout {
   @apply flex flex-col gap-4 p-4 animate-[expandReveal_0.3s_ease] lg:flex-row lg:gap-6 lg:p-5;

@@ -6,7 +6,7 @@ import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline';
 import type { BankAccount } from '../../models/BankAccount';
 import type { CashFlow } from '../../models/CashFlow';
 import type { RateChange } from '../../models/RateChange';
-import { INTERVAL_LABELS } from '../../enums/PayoutInterval';
+import { PayoutInterval, INTERVAL_LABELS } from '../../enums/PayoutInterval';
 import { INTEREST_TYPE_LABELS } from '../../enums/InterestType';
 import { formatCurrency, formatDurationShort, formatDate } from '../../utils/format';
 import CashFlowEditor from '../CashFlowEditor';
@@ -159,17 +159,14 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
           <thead>
             <tr>
               <th></th>
+              <th><ColumnInfo label="Saldo" info="Je huidige inleg: het startbedrag plus alle stortingen en min alle opnames. Rente is hier niet in meegenomen." /></th>
               <th>Rente</th>
-              <th>Type</th>
-              <th>Uitbetaling</th>
-              <th>Looptijd</th>
               <th>Van</th>
               <th>Tot</th>
-              <th><ColumnInfo label="Saldo" info="Je huidige inleg: het startbedrag plus alle stortingen en min alle opnames. Rente is hier niet in meegenomen." /></th>
+              <th>Looptijd</th>
+              <th>Type</th>
+              <th>Uitbetaling</th>
               <th><ColumnInfo label="Uitbetaald" info="Rente die al daadwerkelijk is uitbetaald op de uitbetalingsdatums tot en met vandaag." /></th>
-              <th><ColumnInfo label="Opgebouwd" info="Rente die is opgebouwd sinds de laatste uitbetaling, maar nog niet is uitbetaald. Dit bedrag groeit dagelijks." /></th>
-              <th><ColumnInfo label="Rente-opbrengst" info="De totale rente over de gehele looptijd van de rekening, inclusief toekomstige periodes." /></th>
-              <th><ColumnInfo label="Totaal" info="Je eindbedrag na de volledige looptijd: inleg + alle stortingen/opnames + totale rente-opbrengst." /></th>
               <th></th>
             </tr>
           </thead>
@@ -185,28 +182,18 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                     <td>
                       <ChevronDownIcon className={`comparison-chevron${isOpen ? ' comparison-chevron--open' : ''}`} aria-hidden="true" />
                     </td>
-                    <td>{r.annualInterestRate}%</td>
-                    <td>{INTEREST_TYPE_LABELS[r.interestType]}</td>
-                    <td>{INTERVAL_LABELS[r.interval]}</td>
-                    <td>{r.isOngoing ? 'Lopend' : formatDurationShort(r.durationMonths)}</td>
-                    <td>{r.startDate ? formatDate(r.startDate) : '—'}</td>
-                    <td>{r.endDate ? formatDate(r.endDate) : '—'}</td>
                     <td className="amount">
                       {formatCurrency(r.currentBalance)}
                     </td>
+                    <td>{r.annualInterestRate}%</td>
+                    <td>{r.startDate ? formatDate(r.startDate) : '—'}</td>
+                    <td>{r.endDate ? formatDate(r.endDate) : '—'}</td>
+                    <td>{r.isOngoing ? 'Lopend' : formatDurationShort(r.durationMonths)}</td>
+                    <td>{INTEREST_TYPE_LABELS[r.interestType]}</td>
+                    <td>{INTERVAL_LABELS[r.interval]}</td>
                     <td className="amount">
                       {formatCurrency(r.disbursedToDate)}
                     </td>
-                    <td className="amount">
-                      {formatCurrency(r.accruedInterest)}
-                    </td>
-                    <td className="amount">
-                      {formatCurrency(r.totalInterest)}
-                      {r.nextPayoutDate && (
-                        <span className="next-payout">{formatDate(r.nextPayoutDate)}</span>
-                      )}
-                    </td>
-                    <td className="amount">{formatCurrency(r.endAmount)}</td>
                     <td onClick={(e) => e.stopPropagation()}>
                       <div className="comparison-actions">
                       <button
@@ -238,7 +225,21 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                   </tr>
                   {isOpen && (
                     <tr className="period-detail-row">
-                      <td colSpan={13}>
+                      <td colSpan={10}>
+                        {(r.accruedInterest > 0 || r.nextPayoutDate) && (
+                          <div className="period-detail-status">
+                            {r.accruedInterest > 0 && (
+                              <span className="period-detail-status__item">
+                                <strong>Opgebouwd:</strong> {formatCurrency(r.accruedInterest)}
+                              </span>
+                            )}
+                            {r.nextPayoutDate && (
+                              <span className="period-detail-status__item">
+                                <strong>Volgende uitbetaling:</strong> {formatDate(r.nextPayoutDate)}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <div className="period-detail-layout">
                           <div className="period-table-wrapper">
                             <table className="period-table">
@@ -271,7 +272,7 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                                     )}
                                     <td>{formatCurrency(p.interestEarned)}</td>
                                     <td>{formatCurrency(p.disbursed)}</td>
-                                    <td>{formatCurrency(p.endBalance)}</td>
+                                    <td>{formatCurrency(idx === r.periods.length - 1 && r.interval === PayoutInterval.AtMaturity ? r.endAmount : p.endBalance)}</td>
                                   </tr>
                                   );
                                 })}
@@ -296,12 +297,6 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                                 <div className="period-summary__item">
                                   <dt>Rente deze maand</dt>
                                   <dd>{formatCurrency(r.interestThisMonth)}</dd>
-                                </div>
-                              )}
-                              {r.nextPayoutDate && (
-                                <div className="period-summary__item">
-                                  <dt>Volgende uitbetaling</dt>
-                                  <dd className="period-summary__date">{formatDate(r.nextPayoutDate)}</dd>
                                 </div>
                               )}
                             </dl>

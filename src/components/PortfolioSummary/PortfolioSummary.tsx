@@ -236,7 +236,6 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
             const projB = viewMode === 'disbursed' ? b.calendarMonthDisbursement : b.calendarMonthProjection;
             return (projB.get(selectedMonthKey) ?? 0) - (projA.get(selectedMonthKey) ?? 0);
           });
-          const inactiveCount = sorted.filter((r) => itemStatusForMonth(r, selectedMonthKey) !== 'active').length;
           const visible = showInactive ? sorted : sorted.filter((r) => itemStatusForMonth(r, selectedMonthKey) === 'active');
           return (<>
         {visible.map((r) => {
@@ -325,12 +324,10 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
           </div>
           );
         })}
-        {inactiveCount > 0 && (
-          <label className="portfolio-inactive-toggle">
-            <input type="checkbox" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} />
-            Toon verlopen en toekomstige rekeningen ({inactiveCount})
-          </label>
-        )}
+        <div className="form-checkbox portfolio-inactive-toggle">
+          <input type="checkbox" id="showInactive" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} />
+          <label htmlFor="showInactive">Toon verlopen en toekomstige rekeningen</label>
+        </div>
           </>);
         })()}
       </div>
