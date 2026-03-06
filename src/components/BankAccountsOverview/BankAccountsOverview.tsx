@@ -7,7 +7,7 @@ import type { BankAccount } from '../../models/BankAccount';
 import type { CashFlow } from '../../models/CashFlow';
 import type { RateChange } from '../../models/RateChange';
 import { PayoutInterval, INTERVAL_LABELS } from '../../enums/PayoutInterval';
-import { INTEREST_TYPE_LABELS } from '../../enums/InterestType';
+import { InterestType, INTEREST_TYPE_LABELS } from '../../enums/InterestType';
 import { formatCurrency, formatDurationShort, formatDate } from '../../utils/format';
 import CashFlowEditor from '../CashFlowEditor';
 import RateChangeEditor from '../RateChangeEditor';
@@ -159,14 +159,12 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
           <thead>
             <tr>
               <th></th>
-              <th><ColumnInfo label="Saldo" info="Je huidige inleg: het startbedrag plus alle stortingen en min alle opnames. Rente is hier niet in meegenomen." /></th>
+              <th><ColumnInfo label="Saldo" info="Je huidige saldo: het startbedrag plus alle stortingen en min alle opnames. Bij rente op rente wordt uitbetaalde rente meegenomen." /></th>
               <th>Rente</th>
               <th>Van</th>
               <th>Tot</th>
               <th>Looptijd</th>
               <th>Type</th>
-              <th>Uitbetaling</th>
-              <th><ColumnInfo label="Uitbetaald" info="Rente die al daadwerkelijk is uitbetaald op de uitbetalingsdatums tot en met vandaag." /></th>
               <th></th>
             </tr>
           </thead>
@@ -183,16 +181,23 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                       <ChevronDownIcon className={`comparison-chevron${isOpen ? ' comparison-chevron--open' : ''}`} aria-hidden="true" />
                     </td>
                     <td className="amount">
-                      {formatCurrency(r.currentBalance)}
+                      {formatCurrency(r.interestType === InterestType.Compound ? r.currentBalance + r.disbursedToDate : r.currentBalance)}
+                      {!r.isOngoing && r.totalInterest > 0 && (() => {
+                        const pct = Math.round((r.disbursedToDate + r.accruedInterest) / r.totalInterest * 100);
+                        if (pct >= 100) return <span className="comparison-badge comparison-badge--complete">Voltooid</span>;
+                        return <span className="comparison-badge comparison-badge--progress">{pct}%</span>;
+                      })()}
                     </td>
                     <td>{r.annualInterestRate}%</td>
-                    <td>{r.startDate ? formatDate(r.startDate) : '—'}</td>
+                    <td>
+                      {r.startDate ? formatDate(r.startDate) : '—'}
+                      {r.hasNotStartedYet && <span className="comparison-badge comparison-badge--upcoming">Toekomstig</span>}
+                    </td>
                     <td>{r.endDate ? formatDate(r.endDate) : '—'}</td>
                     <td>{r.isOngoing ? 'Lopend' : formatDurationShort(r.durationMonths)}</td>
-                    <td>{INTEREST_TYPE_LABELS[r.interestType]}</td>
-                    <td>{INTERVAL_LABELS[r.interval]}</td>
-                    <td className="amount">
-                      {formatCurrency(r.disbursedToDate)}
+                    <td>
+                      <span className="comparison-badge">{INTERVAL_LABELS[r.interval]}</span>
+                      <span className="comparison-badge">{INTEREST_TYPE_LABELS[r.interestType]}</span>
                     </td>
                     <td onClick={(e) => e.stopPropagation()}>
                       <div className="comparison-actions">
@@ -212,6 +217,16 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                       >
                         {portfolioIds.has(r.id) ? <StarIconSolid aria-hidden="true" /> : <StarIconOutline aria-hidden="true" />}
                       </button>
+                      {import.meta.env.DEV && (
+                        <button
+                          className="btn-icon"
+                          title="Kopieer data"
+                          onClick={() => navigator.clipboard.writeText(JSON.stringify(r, null, 2))}
+                          aria-label="Kopieer data"
+                        >
+                          📋
+                        </button>
+                      )}
                       <button
                         className="btn-icon"
                         title="Verwijderen"
@@ -225,12 +240,17 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                   </tr>
                   {isOpen && (
                     <tr className="period-detail-row">
-                      <td colSpan={10}>
-                        {(r.accruedInterest > 0 || r.nextPayoutDate) && (
+                      <td colSpan={8}>
+                        {(r.disbursedToDate > 0 || r.accruedInterest > 0 || r.nextPayoutDate) && (
                           <div className="period-detail-status">
+                            {r.disbursedToDate > 0 && (
+                              <span className="period-detail-status__item">
+                                <strong><ColumnInfo label="Uitbetaald" info="Rente die al daadwerkelijk is uitbetaald op de uitbetalingsdatums tot en met vandaag." /></strong> {formatCurrency(r.disbursedToDate)}
+                              </span>
+                            )}
                             {r.accruedInterest > 0 && (
                               <span className="period-detail-status__item">
-                                <strong>Opgebouwd:</strong> {formatCurrency(r.accruedInterest)}
+                                <strong><ColumnInfo label="Opgebouwd" info="Rente die is opgebouwd sinds de laatste uitbetaling, maar nog niet is uitbetaald. Dit bedrag groeit dagelijks." /></strong> {formatCurrency(r.accruedInterest)}
                               </span>
                             )}
                             {r.nextPayoutDate && (

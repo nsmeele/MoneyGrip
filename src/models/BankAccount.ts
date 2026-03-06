@@ -130,17 +130,21 @@ export class BankAccount {
     if (this.periods.length === 0 || !this.startDate) return 0;
 
     const today = todayISO();
+    let earned = 0;
 
     for (let i = 0; i < this.periods.length; i++) {
       const periodStart = i === 0 ? this.startDate : this.periods[i - 1].endDate;
       const periodEnd = this.periods[i].endDate;
 
       if (!periodStart || !periodEnd) continue;
-      if (isBeforeDate(today, periodStart)) return 0;
+      if (isBeforeDate(today, periodStart)) break;
 
-      if (!isBeforeDate(today, periodEnd)) continue;
+      if (!isBeforeDate(today, periodEnd)) {
+        earned += this.periods[i].interestEarned;
+        continue;
+      }
 
-      // Today falls within this period — calculate exact accrued interest
+      // Today falls within this period — calculate partial interest (exclusive of today)
       const endISO = addMonthsToISO(this.startDate, this.durationMonths);
       const expanded = expandCashFlows(this.cashFlows, endISO)
         .filter(cf => cf.date >= periodStart && cf.date < today);
@@ -149,11 +153,11 @@ export class BankAccount {
         periodStart, today, this.periods[i].startBalance,
         expanded, this.annualInterestRate, this.dayCount, this.rateChanges,
       );
-      return interestEarned;
+      earned += interestEarned;
+      break;
     }
 
-    // Past all periods
-    return 0;
+    return earned - this.disbursedToDate;
   }
 
   get label(): string {

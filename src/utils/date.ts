@@ -1,4 +1,4 @@
-import { parseISO, differenceInMonths, differenceInDays, addMonths as dfnsAddMonths, lastDayOfMonth, format, isBefore } from 'date-fns';
+import { parseISO, differenceInMonths, differenceInDays, addDays, addMonths as dfnsAddMonths, lastDayOfMonth, format, isBefore } from 'date-fns';
 
 export function parseDate(iso: string): Date {
   return parseISO(iso);
@@ -34,6 +34,10 @@ export function getYear(iso: string): number {
 
 export function getMonth(iso: string): number {
   return parseISO(iso).getMonth();
+}
+
+export function addDayISO(iso: string): string {
+  return toISO(addDays(parseISO(iso), 1));
 }
 
 export function daysBetween(startISO: string, endISO: string): number {

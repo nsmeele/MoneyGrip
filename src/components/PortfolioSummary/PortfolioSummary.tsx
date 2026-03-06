@@ -89,8 +89,8 @@ function getMonthDays(account: BankAccount, monthKey: string): DayRow[] {
     if (entry) {
       const nextDay = addDay(cursor);
       const dayInterest = entry.balance * (entry.rate / 100) * yearFraction(cursor, nextDay, account.dayCount);
-      cumulative += dayInterest;
       rows.push({ date: cursor, balance: entry.balance, rate: entry.rate, dayInterest, cumulative });
+      cumulative += dayInterest;
     }
     cursor = addDay(cursor);
   }
@@ -308,13 +308,6 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot>
-                      <tr>
-                        <td colSpan={3}>Totaal</td>
-                        <td>{formatCurrency(days[days.length - 1].cumulative)}</td>
-                        <td></td>
-                      </tr>
-                    </tfoot>
                   </table>
                 ) : (
                   <p className="portfolio-breakdown__empty">Geen rente in deze maand</p>

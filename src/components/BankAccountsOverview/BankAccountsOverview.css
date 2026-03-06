@@ -80,6 +80,23 @@
   @apply block text-xs font-normal text-navy-400;
 }
 
+/* ─── Comparison Badge ─── */
+.comparison-badge {
+  @apply inline-block text-[0.625rem] font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-navy-500 bg-navy-100 mr-1 last:mr-0 dark:text-navy-400 dark:bg-navy-800;
+}
+
+.comparison-badge--progress {
+  @apply ml-1.5 mr-0 align-middle text-copper-600 bg-copper-500/10 dark:text-copper-400 dark:bg-copper-500/15;
+}
+
+.comparison-badge--upcoming {
+  @apply ml-1.5 mr-0 align-middle text-navy-600 bg-navy-100 dark:text-navy-300 dark:bg-navy-700;
+}
+
+.comparison-badge--complete {
+  @apply ml-1.5 mr-0 align-middle text-success bg-success-light;
+}
+
 /* ─── Comparison Row ─── */
 .comparison-row {
   @apply cursor-pointer select-none transition-colors duration-150 hover:bg-copper-500/[0.04] dark:hover:bg-copper-500/[0.06];
