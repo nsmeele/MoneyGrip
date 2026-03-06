@@ -166,6 +166,15 @@
 }
 
 
+/* ─── Inactive Toggle ─── */
+.portfolio-inactive-toggle {
+  @apply flex items-center gap-2 py-3 text-xs text-navy-400 cursor-pointer select-none dark:text-navy-500;
+}
+
+.portfolio-inactive-toggle input {
+  @apply accent-copper-500;
+}
+
 .portfolio-breakdown__payout {
   @apply text-xs font-semibold text-copper-600 py-2 dark:text-copper-400;
 }

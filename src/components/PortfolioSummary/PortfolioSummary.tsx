@@ -111,6 +111,7 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
   const [monthOffset, setMonthOffset] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'accrued' | 'disbursed'>('accrued');
+  const [showInactive, setShowInactive] = useState(false);
 
   const selectedMonthKey = useMemo(() => {
     if (monthOffset === 0) return currentMonthKey;
@@ -229,11 +230,16 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
       <PortfolioChart items={items} viewMode={viewMode} />
 
       <div className="portfolio-items">
-        {[...items].sort((a, b) => {
-          const projA = viewMode === 'disbursed' ? a.calendarMonthDisbursement : a.calendarMonthProjection;
-          const projB = viewMode === 'disbursed' ? b.calendarMonthDisbursement : b.calendarMonthProjection;
-          return (projB.get(selectedMonthKey) ?? 0) - (projA.get(selectedMonthKey) ?? 0);
-        }).map((r) => {
+        {(() => {
+          const sorted = [...items].sort((a, b) => {
+            const projA = viewMode === 'disbursed' ? a.calendarMonthDisbursement : a.calendarMonthProjection;
+            const projB = viewMode === 'disbursed' ? b.calendarMonthDisbursement : b.calendarMonthProjection;
+            return (projB.get(selectedMonthKey) ?? 0) - (projA.get(selectedMonthKey) ?? 0);
+          });
+          const inactiveCount = sorted.filter((r) => itemStatusForMonth(r, selectedMonthKey) !== 'active').length;
+          const visible = showInactive ? sorted : sorted.filter((r) => itemStatusForMonth(r, selectedMonthKey) === 'active');
+          return (<>
+        {visible.map((r) => {
           const status = itemStatusForMonth(r, selectedMonthKey);
           const isExpanded = expandedId === r.id;
           const days = isExpanded && viewMode === 'accrued' ? getMonthDays(r, selectedMonthKey) : [];
@@ -319,6 +325,14 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
           </div>
           );
         })}
+        {inactiveCount > 0 && (
+          <label className="portfolio-inactive-toggle">
+            <input type="checkbox" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} />
+            Toon verlopen en toekomstige rekeningen ({inactiveCount})
+          </label>
+        )}
+          </>);
+        })()}
       </div>
     </section>
   );
