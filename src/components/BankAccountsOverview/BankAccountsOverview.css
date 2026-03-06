@@ -2,19 +2,19 @@
 
 /* ─── Empty State ─── */
 .empty-state {
-  @apply text-center py-16 px-6 animate-[fadeInUp_0.5s_ease_both];
+  @apply text-center py-16 px-6 animate-[fadeInUp_0.5s_ease_both] sm:py-20 sm:px-8;
 }
 
 .empty-state__icon {
-  @apply w-10 h-10 mx-auto mb-3 text-navy-300 dark:text-navy-500;
+  @apply w-10 h-10 mx-auto mb-3 text-navy-300 dark:text-navy-500 sm:w-12 sm:h-12 sm:mb-4;
 }
 
 .empty-state h3 {
-  @apply font-display text-base text-navy-700 mb-1.5 dark:text-navy-200;
+  @apply font-display text-base text-navy-700 mb-1.5 dark:text-navy-200 sm:text-lg sm:mb-2;
 }
 
 .empty-state p {
-  @apply text-navy-400 text-sm max-w-xs mx-auto leading-relaxed;
+  @apply text-navy-400 text-sm max-w-xs mx-auto leading-relaxed sm:text-[0.9375rem] sm:max-w-sm;
 }
 
 .empty-state__actions {
@@ -25,21 +25,6 @@
   @apply w-auto mt-0;
 }
 
-@media (min-width: 640px) {
-  .empty-state {
-    @apply py-20 px-8;
-  }
-  .empty-state__icon {
-    @apply w-12 h-12 mb-4;
-  }
-  .empty-state h3 {
-    @apply text-lg mb-2;
-  }
-  .empty-state p {
-    @apply text-[0.9375rem] max-w-sm;
-  }
-}
-
 
 /* ─── Comparison Table ─── */
 .comparison-table-wrapper-inner {
@@ -48,13 +33,7 @@
 }
 
 .comparison-table {
-  @apply w-full text-[0.8125rem] border-collapse;
-}
-
-@media (min-width: 640px) {
-  .comparison-table {
-    @apply text-[0.9375rem];
-  }
+  @apply w-full text-[0.8125rem] border-collapse sm:text-[0.9375rem];
 }
 
 .comparison-table thead {
@@ -62,7 +41,7 @@
 }
 
 .comparison-table th {
-  @apply px-3 py-3 text-left font-semibold uppercase whitespace-nowrap text-[0.6875rem] tracking-[0.07em];
+  @apply px-3 py-3 text-left font-semibold uppercase whitespace-nowrap text-[0.6875rem] tracking-[0.07em] sm:px-5 sm:py-3.5 sm:text-xs;
 }
 
 .comparison-table th:first-child {
@@ -73,20 +52,8 @@
   @apply rounded-tr-lg;
 }
 
-@media (min-width: 640px) {
-  .comparison-table th {
-    @apply px-5 py-3.5 text-xs;
-  }
-}
-
 .comparison-table td {
-  @apply px-3 py-3 whitespace-nowrap border-b border-navy-100 dark:border-navy-700;
-}
-
-@media (min-width: 640px) {
-  .comparison-table td {
-    @apply px-5 py-3.5;
-  }
+  @apply px-3 py-3 whitespace-nowrap border-b border-navy-100 dark:border-navy-700 sm:px-5 sm:py-3.5;
 }
 
 .comparison-table tbody tr {
@@ -136,13 +103,7 @@
 
 /* ─── Period Detail Layout ─── */
 .period-detail-layout {
-  @apply flex flex-col gap-4 p-4 animate-[expandReveal_0.3s_ease];
-}
-
-@media (min-width: 960px) {
-  .period-detail-layout {
-    @apply flex-row gap-6 p-5;
-  }
+  @apply flex flex-col gap-4 p-4 animate-[expandReveal_0.3s_ease] lg:flex-row lg:gap-6 lg:p-5;
 }
 
 /* ─── Period Table ─── */
@@ -152,13 +113,7 @@
 }
 
 .period-table {
-  @apply w-full text-xs border-collapse;
-}
-
-@media (min-width: 640px) {
-  .period-table {
-    @apply text-[0.8125rem];
-  }
+  @apply text-xs border-collapse sm:text-[0.8125rem] lg:w-full;
 }
 
 .period-table thead {
@@ -166,23 +121,11 @@
 }
 
 .period-table th {
-  @apply px-3 py-2 text-right font-semibold text-navy-600 uppercase text-[0.625rem] tracking-[0.06em] first:text-left dark:text-navy-300;
-}
-
-@media (min-width: 640px) {
-  .period-table th {
-    @apply px-4 py-2.5 text-[0.6875rem];
-  }
+  @apply px-3 py-2 text-right font-semibold text-navy-600 uppercase text-[0.625rem] tracking-[0.06em] first:text-left dark:text-navy-300 sm:px-4 sm:py-2.5 sm:text-[0.6875rem];
 }
 
 .period-table td {
-  @apply px-3 py-2 text-right text-navy-700 border-b border-navy-100 tabular-nums first:text-left first:text-navy-500 first:font-medium dark:text-navy-200 dark:border-navy-700 dark:first:text-navy-400;
-}
-
-@media (min-width: 640px) {
-  .period-table td {
-    @apply px-4 py-[9px];
-  }
+  @apply px-3 py-2 text-right text-navy-700 border-b border-navy-100 tabular-nums first:text-left first:text-navy-500 first:font-medium dark:text-navy-200 dark:border-navy-700 dark:first:text-navy-400 sm:px-4 sm:py-[9px];
 }
 
 .period-table__date {
@@ -199,23 +142,11 @@
 
 /* ─── Period Summary ─── */
 .period-summary {
-  @apply flex-shrink-0 w-full;
-}
-
-@media (min-width: 960px) {
-  .period-summary {
-    @apply w-56 border-l border-navy-100 pl-6 dark:border-navy-700;
-  }
+  @apply flex-shrink-0 w-full lg:w-56 lg:border-l lg:border-navy-100 lg:pl-6 dark:lg:border-navy-700;
 }
 
 .period-summary__list {
-  @apply flex flex-row flex-wrap gap-x-6 gap-y-3;
-}
-
-@media (min-width: 960px) {
-  .period-summary__list {
-    @apply flex-col gap-4;
-  }
+  @apply flex flex-row flex-wrap gap-x-6 gap-y-3 lg:flex-col lg:gap-4;
 }
 
 .period-summary__item dt {
@@ -236,17 +167,11 @@
 
 /* ─── Period Editors ─── */
 .period-editors {
-  @apply flex flex-col gap-0;
+  @apply flex flex-col gap-0 sm:flex-row sm:gap-4;
 }
 
-@media (min-width: 640px) {
-  .period-editors {
-    @apply flex-row gap-4;
-  }
-
-  .period-editors > * {
-    @apply flex-1 min-w-0;
-  }
+.period-editors > * {
+  @apply sm:flex-1 sm:min-w-0;
 }
 
 /* ─── Column Info Popover ─── */

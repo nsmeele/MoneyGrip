@@ -30,12 +30,13 @@ const chartColors = {
 
 interface PortfolioChartProps {
   items: BankAccount[];
+  viewMode?: 'accrued' | 'disbursed';
 }
 
-export default function PortfolioChart({ items }: PortfolioChartProps) {
+export default function PortfolioChart({ items, viewMode = 'accrued' }: PortfolioChartProps) {
   const { theme } = useTheme();
   const colors = chartColors[theme];
-  const data = useMemo(() => buildPortfolioChartData(items), [items]);
+  const data = useMemo(() => buildPortfolioChartData(items, viewMode), [items, viewMode]);
 
   if (data.length === 0) return null;
 

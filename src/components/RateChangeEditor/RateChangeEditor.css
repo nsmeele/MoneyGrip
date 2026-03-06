@@ -2,7 +2,7 @@
 
 /* ─── RateChange Editor ─── */
 .rate-change-editor {
-  @apply py-4 px-3 border-t border-navy-200/40 dark:border-navy-700/40;
+  @apply py-4 px-3 border-t border-navy-200/40 dark:border-navy-700/40 sm:py-5 sm:px-4;
 }
 
 .rate-change-editor__header {
@@ -24,11 +24,11 @@
 }
 
 .rate-change-editor__form {
-  @apply mb-4 p-3 rounded-lg bg-navy-100/40 animate-[expandReveal_0.25s_ease] dark:bg-navy-800/40;
+  @apply mb-4 p-3 rounded-lg bg-navy-100/40 animate-[expandReveal_0.25s_ease] dark:bg-navy-800/40 sm:p-4;
 }
 
 .rate-change-editor__fields {
-  @apply grid grid-cols-1 gap-2;
+  @apply grid grid-cols-1 gap-2 sm:grid-cols-[140px_1fr] sm:gap-3;
 }
 
 .rate-change-editor__fields .form-input {
@@ -55,7 +55,7 @@
 
 .rate-change-item {
   @apply flex items-center gap-2 py-2 px-1 border-b border-navy-100
-         transition-colors duration-150 hover:bg-copper-500/[0.03] dark:border-navy-700 dark:hover:bg-copper-500/[0.06];
+         transition-colors duration-150 hover:bg-copper-500/[0.03] dark:border-navy-700 dark:hover:bg-copper-500/[0.06] sm:gap-3 sm:py-2.5 sm:px-2;
 }
 
 .rate-change-item:last-child {
@@ -69,22 +69,4 @@
 
 .rate-change-item__rate {
   @apply flex-1 text-sm font-bold text-navy-700 tabular-nums dark:text-navy-200;
-}
-
-@media (min-width: 640px) {
-  .rate-change-editor {
-    @apply py-5 px-4;
-  }
-
-  .rate-change-editor__form {
-    @apply p-4;
-  }
-
-  .rate-change-editor__fields {
-    @apply grid-cols-[140px_1fr] gap-3;
-  }
-
-  .rate-change-item {
-    @apply gap-3 py-2.5 px-2;
-  }
 }

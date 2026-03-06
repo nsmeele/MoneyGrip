@@ -11,7 +11,7 @@ const STORAGE_KEY = 'bank-account-results';
 
 const calc = new AccountCalculator();
 
-function reconstructResult(item: ExportedResult): BankAccount {
+function reconstructResult(item: ExportedResult, ongoingDuration?: number): BankAccount {
   const cashFlows = item.cashFlows ?? [];
   const isOngoing = item.isOngoing ?? false;
   const dayCount = item.dayCount ?? DayCountConvention.NOM_12;
@@ -20,7 +20,7 @@ function reconstructResult(item: ExportedResult): BankAccount {
   let result: BankAccount;
 
   const durationMonths = isOngoing && item.startDate
-    ? Math.max(1, Math.ceil(daysBetween(item.startDate, todayISO()) / 30.44) + 12)
+    ? (ongoingDuration ?? Math.max(1, Math.ceil(daysBetween(item.startDate, todayISO()) / 30.44) + 12))
     : item.durationMonths;
 
   const shouldRecalculate = (isOngoing && item.startDate)
@@ -51,7 +51,30 @@ function loadFromStorage(): BankAccount[] {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) return [];
     const parsed: ExportedResult[] = JSON.parse(data);
-    return parsed.map(reconstructResult);
+    const results = parsed.map((item) => reconstructResult(item));
+
+    // Find the last month across all projections
+    let maxKey = '';
+    for (const r of results) {
+      for (const key of r.calendarMonthProjection.keys()) {
+        if (key > maxKey) maxKey = key;
+      }
+    }
+
+    // Re-reconstruct ongoing accounts that don't reach that far
+    if (maxKey) {
+      return results.map((r, i) => {
+        if (!r.isOngoing || !r.startDate) return r;
+        const lastKey = [...r.calendarMonthProjection.keys()].sort().pop();
+        if (lastKey && lastKey >= maxKey) return r;
+        const months = Math.max(1, Math.ceil(daysBetween(r.startDate, `${maxKey}-28`) / 30.44) + 1);
+        const rebuilt = reconstructResult(parsed[i], months);
+        Object.assign(rebuilt, { id: r.id, timestamp: r.timestamp });
+        return rebuilt;
+      });
+    }
+
+    return results;
   } catch {
     return [];
   }
@@ -98,7 +121,7 @@ export function useResultStorage() {
   }, []);
 
   const replaceResults = useCallback((incoming: ExportedResult[]) => {
-    const reconstructed = incoming.map(reconstructResult);
+    const reconstructed = incoming.map((item) => reconstructResult(item));
     saveToStorage(reconstructed);
     setResults(reconstructed);
   }, []);
@@ -106,7 +129,7 @@ export function useResultStorage() {
   const mergeResults = useCallback((incoming: ExportedResult[]) => {
     setResults((prev) => {
       const existingIds = new Set(prev.map((r) => r.id));
-      const newItems = incoming.filter((r) => !existingIds.has(r.id)).map(reconstructResult);
+      const newItems = incoming.filter((r) => !existingIds.has(r.id)).map((item) => reconstructResult(item));
       const merged = [...prev, ...newItems];
       saveToStorage(merged);
       return merged;

@@ -28,13 +28,19 @@ function fillMonthGaps(keys: string[]): string[] {
   return all;
 }
 
-export function buildPortfolioChartData(items: BankAccount[]): ChartDataPoint[] {
+export function buildPortfolioChartData(
+  items: BankAccount[],
+  projectionKey: 'accrued' | 'disbursed' = 'accrued',
+): ChartDataPoint[] {
   const withDates = items.filter((r) => r.startDate);
   if (withDates.length === 0) return [];
 
   const combined = new Map<string, number>();
   for (const item of withDates) {
-    for (const [key, value] of item.calendarMonthProjection) {
+    const projection = projectionKey === 'disbursed'
+      ? item.calendarMonthDisbursement
+      : item.calendarMonthProjection;
+    for (const [key, value] of projection) {
       combined.set(key, (combined.get(key) ?? 0) + value);
     }
   }

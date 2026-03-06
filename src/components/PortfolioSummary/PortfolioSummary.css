@@ -3,15 +3,35 @@
 /* ─── Portfolio ─── */
 
 .portfolio-stats {
-  @apply grid grid-cols-1 gap-3 mb-4;
+  @apply grid grid-cols-1 gap-3 mb-4 sm:grid-cols-3 sm:gap-4 sm:mb-5;
 }
 
 .portfolio-stat {
-  @apply p-3.5 text-center transition-colors duration-200;
+  @apply p-3.5 text-center transition-colors duration-200 sm:p-4;
 }
 
 .portfolio-stat--highlight {
   @apply border-l-2 border-copper-400;
+}
+
+/* ─── Portfolio Tabs ─── */
+.portfolio-tabs {
+  @apply flex gap-0 mb-4 border-b border-navy-200/60 dark:border-navy-700/40;
+}
+
+.portfolio-tabs__tab {
+  @apply relative px-4 py-2 text-xs font-semibold uppercase tracking-[0.06em] cursor-pointer
+         border-none bg-transparent font-body text-navy-400 transition-colors duration-200
+         hover:text-navy-600 dark:text-navy-500 dark:hover:text-navy-300;
+}
+
+.portfolio-tabs__tab--active {
+  @apply text-copper-600 dark:text-copper-400;
+}
+
+.portfolio-tabs__tab--active::after {
+  @apply absolute bottom-0 left-0 w-full h-0.5 bg-copper-500 rounded-full;
+  content: '';
 }
 
 /* ─── Month Navigation ─── */
@@ -35,12 +55,20 @@
   @apply text-[0.5625rem] font-bold uppercase tracking-wide text-copper-500 bg-copper-100 rounded-full px-1.5 py-px dark:text-copper-400 dark:bg-copper-500/15;
 }
 
+.month-nav__reset {
+  @apply text-[0.5625rem] font-bold uppercase tracking-wide rounded-full px-1.5 py-px
+         border-none cursor-pointer font-body
+         text-navy-400 bg-navy-100 transition-all duration-200
+         hover:text-copper-600 hover:bg-copper-100 active:scale-95
+         dark:text-navy-400 dark:bg-navy-800 dark:hover:text-copper-400 dark:hover:bg-copper-500/15;
+}
+
 .portfolio-stat-label {
   @apply font-semibold text-navy-500 uppercase mb-1 text-[0.6875rem] tracking-[0.07em] dark:text-navy-400;
 }
 
 .portfolio-stat-value {
-  @apply text-lg font-bold text-navy-900 tabular-nums dark:text-navy-50;
+  @apply text-lg font-bold text-navy-900 tabular-nums dark:text-navy-50 sm:text-xl;
 }
 
 .portfolio-stat--highlight .portfolio-stat-value {
@@ -48,11 +76,27 @@
 }
 
 .portfolio-items {
-  @apply flex flex-col gap-2;
+  @apply flex flex-col;
+}
+
+.portfolio-entry {
+  @apply border-b border-navy-100 dark:border-navy-700;
+}
+
+.portfolio-entry:last-child {
+  @apply border-b-0;
 }
 
 .portfolio-item {
-  @apply flex items-center gap-3 px-0 py-3 border-b border-navy-100 transition-colors duration-200 hover:bg-navy-50 dark:border-navy-700 dark:hover:bg-navy-800/50;
+  @apply flex items-center gap-3 px-0 py-3 cursor-pointer select-none transition-colors duration-200 hover:bg-navy-50 dark:hover:bg-navy-800/50;
+}
+
+.portfolio-item-chevron {
+  @apply inline-flex items-center justify-center w-5 h-5 text-[0.6rem] text-navy-400 transition-transform duration-200;
+}
+
+.portfolio-item-chevron--open {
+  @apply rotate-180;
 }
 
 .portfolio-item-info {
@@ -83,22 +127,49 @@
   @apply inline-block text-[0.625rem] font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-navy-600 bg-navy-100 ml-2 align-middle dark:text-navy-300 dark:bg-navy-700;
 }
 
-.badge-ongoing {
-  @apply inline-block text-[0.625rem] font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-success bg-success/10 ml-2 align-middle;
+.badge-interval {
+  @apply inline-block text-[0.625rem] font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-navy-500 bg-navy-100 ml-2 align-middle dark:text-navy-400 dark:bg-navy-800;
 }
 
 .portfolio-item-amount {
   @apply font-bold text-sm whitespace-nowrap text-copper-600 tabular-nums dark:text-copper-400;
 }
 
-@media (min-width: 640px) {
-  .portfolio-stats {
-    @apply grid-cols-3 gap-4 mb-5;
-  }
-  .portfolio-stat {
-    @apply p-4;
-  }
-  .portfolio-stat-value {
-    @apply text-xl;
-  }
+/* ─── Portfolio Breakdown ─── */
+.portfolio-breakdown {
+  @apply px-1 pb-3 overflow-x-auto animate-[expandReveal_0.25s_ease];
+  -webkit-overflow-scrolling: touch;
+}
+
+.portfolio-breakdown__table {
+  @apply text-xs border-collapse;
+}
+
+.portfolio-breakdown__table th {
+  @apply px-2.5 py-1.5 text-right font-semibold text-navy-500 uppercase text-[0.5625rem] tracking-[0.06em] first:text-left bg-navy-50 whitespace-nowrap dark:text-navy-400 dark:bg-navy-800 sm:px-3 sm:text-[0.625rem];
+}
+
+.portfolio-breakdown__table td {
+  @apply px-2.5 py-1.5 text-right text-navy-700 tabular-nums whitespace-nowrap border-b border-navy-50 dark:text-navy-200 dark:border-navy-800 sm:px-3;
+}
+
+.portfolio-breakdown__table td:first-child {
+  @apply text-left text-navy-500 font-medium dark:text-navy-400;
+}
+
+.portfolio-breakdown__table tbody tr {
+  @apply transition-colors duration-150 hover:bg-copper-500/[0.04] dark:hover:bg-copper-500/[0.06];
+}
+
+.portfolio-breakdown__table tfoot td {
+  @apply font-semibold text-navy-800 border-t border-navy-200 border-b-0 dark:text-navy-100 dark:border-navy-600;
+}
+
+
+.portfolio-breakdown__payout {
+  @apply text-xs font-semibold text-copper-600 py-2 dark:text-copper-400;
+}
+
+.portfolio-breakdown__empty {
+  @apply text-xs text-navy-400 py-2;
 }

@@ -103,7 +103,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
     const amount = parseFloat(startAmount.replace(/\./g, '').replace(',', '.'));
     const rate = parseFloat(interestRate.replace(',', '.'));
     const durationMonths = isOngoing
-      ? Math.max(1, Math.ceil(daysBetween(startDate, endOfMonthISO(todayISO())) / 30.44))
+      ? Math.max(1, Math.ceil(daysBetween(startDate, endOfMonthISO(todayISO())) / 30.44) + 12)
       : hasDurationFromDates ? durationFromDates : parseInt(years) * 12 + parseInt(months || '0');
 
     const input = new BankAccountInput(amount, rate, durationMonths, interval, interestType, startDate || undefined, editingResult?.cashFlows ?? [], isOngoing, dayCount, isVariableRate ? (editingResult?.rateChanges ?? []) : [], isVariableRate);

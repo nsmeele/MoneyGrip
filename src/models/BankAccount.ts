@@ -160,27 +160,67 @@ export class BankAccount {
     const map = new Map<string, number>();
     if (!this.startDate || this.periods.length === 0) return map;
 
+    const endISO = this.endDate ?? addMonthsToISO(this.startDate, this.durationMonths);
+    const allCashFlows = expandCashFlows(this.cashFlows, endISO);
+
     for (let i = 0; i < this.periods.length; i++) {
       const period = this.periods[i];
       const periodStart = i === 0 ? this.startDate : this.periods[i - 1].endDate!;
       const periodEnd = period.endDate;
       if (!periodEnd) continue;
+      if (daysBetween(periodStart, periodEnd) <= 0) continue;
 
-      const totalDays = daysBetween(periodStart, periodEnd);
-      if (totalDays <= 0) continue;
-
+      // Calculate actual interest per month-slice
+      const slices: { key: string; interest: number }[] = [];
+      let sliceTotal = 0;
       let cursor = periodStart;
+
       while (cursor < periodEnd) {
         const nextMonth = getNextMonthStart(cursor);
         const sliceEnd = nextMonth < periodEnd ? nextMonth : periodEnd;
-        const sliceDays = daysBetween(cursor, sliceEnd);
-        const share = (sliceDays / totalDays) * period.interestEarned;
 
-        const key = toMonthKey(cursor);
-        map.set(key, (map.get(key) ?? 0) + share);
+        const sliceCashFlows = allCashFlows.filter(cf => cf.date >= cursor && cf.date < sliceEnd);
 
+        let startBalance = period.startBalance;
+        for (const cf of allCashFlows) {
+          if (cf.date >= periodStart && cf.date < cursor) {
+            startBalance = Math.max(0, startBalance + Math.max(-startBalance, cf.amount));
+          }
+        }
+
+        const { interestEarned } = calculateDailyInterest(
+          cursor, sliceEnd, startBalance, sliceCashFlows,
+          this.annualInterestRate, this.dayCount, this.rateChanges,
+        );
+
+        slices.push({ key: toMonthKey(cursor), interest: interestEarned });
+        sliceTotal += interestEarned;
         cursor = sliceEnd;
       }
+
+      // Scale slices so the period total is preserved
+      const scale = sliceTotal > 0 ? period.interestEarned / sliceTotal : 0;
+      for (const slice of slices) {
+        map.set(slice.key, (map.get(slice.key) ?? 0) + slice.interest * scale);
+      }
+    }
+
+    return map;
+  }
+
+  get calendarMonthDisbursement(): Map<string, number> {
+    const map = new Map<string, number>();
+    if (!this.startDate || this.periods.length === 0) return map;
+
+    // Ensure all months in the projection range exist (with 0) for chart continuity
+    for (const key of this.calendarMonthProjection.keys()) {
+      map.set(key, 0);
+    }
+
+    for (const period of this.periods) {
+      if (!period.endDate || period.disbursed <= 0) continue;
+      const key = toMonthKey(period.endDate);
+      map.set(key, (map.get(key) ?? 0) + period.disbursed);
     }
 
     return map;

@@ -2,7 +2,7 @@
 
 /* ─── CashFlow Editor ─── */
 .cashflow-editor {
-  @apply py-4 px-3 border-t border-navy-200/40 dark:border-navy-700/40;
+  @apply py-4 px-3 border-t border-navy-200/40 dark:border-navy-700/40 sm:py-5 sm:px-4;
 }
 
 .cashflow-editor__header {
@@ -24,7 +24,7 @@
 }
 
 .cashflow-editor__form {
-  @apply mb-4 p-3 rounded-lg bg-navy-100/40 animate-[expandReveal_0.25s_ease] dark:bg-navy-800/40;
+  @apply mb-4 p-3 rounded-lg bg-navy-100/40 animate-[expandReveal_0.25s_ease] dark:bg-navy-800/40 sm:p-4;
 }
 
 .cashflow-editor__type-toggle {
@@ -45,7 +45,7 @@
 }
 
 .cashflow-editor__fields {
-  @apply grid grid-cols-1 gap-2;
+  @apply grid grid-cols-1 gap-2 sm:grid-cols-[140px_120px_1fr] sm:gap-3;
 }
 
 .cashflow-editor__fields .form-input {
@@ -84,7 +84,7 @@
 
 .cashflow-item {
   @apply flex items-center gap-2 py-2 px-1 border-b border-navy-100
-         transition-colors duration-150 hover:bg-copper-500/[0.03] dark:border-navy-700 dark:hover:bg-copper-500/[0.06];
+         transition-colors duration-150 hover:bg-copper-500/[0.03] dark:border-navy-700 dark:hover:bg-copper-500/[0.06] sm:gap-3 sm:py-2.5 sm:px-2;
 }
 
 .cashflow-item:last-child {
@@ -115,22 +115,4 @@
 
 .cashflow-item__amount--withdrawal {
   @apply text-danger;
-}
-
-@media (min-width: 640px) {
-  .cashflow-editor {
-    @apply py-5 px-4;
-  }
-
-  .cashflow-editor__form {
-    @apply p-4;
-  }
-
-  .cashflow-editor__fields {
-    @apply grid-cols-[140px_120px_1fr] gap-3;
-  }
-
-  .cashflow-item {
-    @apply gap-3 py-2.5 px-2;
-  }
 }

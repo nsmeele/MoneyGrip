@@ -76,13 +76,7 @@ body {
 
 /* ─── Layout ─── */
 .app-container {
-  @apply mx-auto px-4 animate-[fadeInUp_0.5s_ease_both];
-}
-
-@media (min-width: 640px) {
-  .app-container {
-    @apply px-6;
-  }
+  @apply mx-auto px-4 animate-[fadeInUp_0.5s_ease_both] sm:px-6;
 }
 
 /* ─── Header ─── */
@@ -191,43 +185,33 @@ body {
   @apply text-xs text-navy-400 leading-relaxed block mt-0.5;
 }
 
-@media (min-width: 640px) {
-  .app-header {
-    @apply pt-10 pb-8 mb-8;
-  }
-  .hero-top {
-    @apply flex-row items-end justify-between;
-  }
-  .hero-top__text h1 {
-    @apply text-3xl;
-  }
-  .app-header__tagline {
-    @apply text-lg;
-  }
-  .header-accent {
-    @apply mb-2;
-  }
-  .usage-guide__layout {
-    @apply grid-cols-2;
-  }
-  .feature-list {
-    @apply grid-cols-2;
-  }
+
+.app-header {
+  @apply sm:pt-10 sm:pb-8 sm:mb-8 lg:pt-12 lg:mb-10;
 }
 
-@media (min-width: 960px) {
-  .app-header {
-    @apply pt-12 pb-8 mb-10;
-  }
-  .hero-top__text h1 {
-    @apply text-4xl;
-  }
-  .app-header__tagline {
-    @apply text-xl;
-  }
-  .header-accent {
-    @apply w-10 mb-3;
-  }
+.hero-top {
+  @apply sm:flex-row sm:items-end sm:justify-between;
+}
+
+.hero-top__text h1 {
+  @apply sm:text-3xl lg:text-4xl;
+}
+
+.app-header__tagline {
+  @apply sm:text-lg lg:text-xl;
+}
+
+.header-accent {
+  @apply sm:mb-2 lg:w-10 lg:mb-3;
+}
+
+.usage-guide__layout {
+  @apply sm:grid-cols-2;
+}
+
+.feature-list {
+  @apply sm:grid-cols-2;
 }
 
 /* ─── Disclaimer Footer ─── */
@@ -249,24 +233,15 @@ body {
 
 /* ─── Section Header ─── */
 .section-header {
-  @apply flex flex-col gap-3 mb-5;
+  @apply flex flex-col gap-3 mb-5 sm:flex-row sm:items-center sm:justify-between sm:mb-6;
 }
 
 .section-header__title h2 {
-  @apply font-display text-lg font-semibold text-navy-900 dark:text-navy-50;
+  @apply font-display text-lg font-semibold text-navy-900 dark:text-navy-50 sm:text-xl;
 }
 
 .section-header__actions {
   @apply flex flex-wrap items-center gap-2;
-}
-
-@media (min-width: 640px) {
-  .section-header {
-    @apply flex-row items-center justify-between mb-6;
-  }
-  .section-header__title h2 {
-    @apply text-xl;
-  }
 }
 
 /* ─── Action Buttons ─── */
@@ -300,13 +275,7 @@ body {
 
 /* ─── Main Grid ─── */
 .main-layout {
-  @apply pb-8;
-}
-
-@media (min-width: 960px) {
-  .main-layout {
-    @apply pb-20;
-  }
+  @apply pb-8 lg:pb-20;
 }
 
 /* ─── Section Divider ─── */
