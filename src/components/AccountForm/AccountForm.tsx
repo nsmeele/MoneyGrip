@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { InformationCircleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import InfoPopover from '../InfoPopover';
 import { PayoutInterval, getIntervalLabel } from '../../enums/PayoutInterval';
 import { InterestType, getInterestTypeLabel } from '../../enums/InterestType';
 import { DayCountConvention, getDayCountLabel, getDayCountDescription } from '../../enums/DayCountConvention';
@@ -434,10 +435,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                         />
                         <label htmlFor={`daycount-${dc}`}>
                           {getDayCountLabel(dc)}
-                          <span className="popover-anchor" tabIndex={0} role="button" aria-label={t('accounts.infoAbout', { label: getDayCountLabel(dc) })} onClick={(e) => e.preventDefault()}>
-                            <InformationCircleIcon className="popover-anchor__icon" aria-hidden="true" />
-                            <span className="popover-anchor__content">{getDayCountDescription(dc)}</span>
-                          </span>
+                          <InfoPopover label={t('accounts.infoAbout', { label: getDayCountLabel(dc) })} onClick={(e) => e.preventDefault()}>{getDayCountDescription(dc)}</InfoPopover>
                         </label>
                       </div>
                     ))}

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router';
-import { ArrowLeftIcon, PencilIcon, XMarkIcon, ChevronRightIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, PencilIcon, XMarkIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline';
 import { useAccountStore } from '../../context/useAccountStore';
@@ -16,6 +16,7 @@ import { formatCurrency, formatDuration, formatDate, formatRate } from '../../ut
 import { toMonthKey, todayISO, parseDate, addMonthsToISO } from '../../utils/date';
 import { getMonthDays } from '../../utils/monthDays';
 import CashFlowEditor, { type AutoCashFlow } from '../../components/CashFlowEditor';
+import InfoPopover from '../../components/InfoPopover';
 import RateChangeEditor from '../../components/RateChangeEditor';
 import AccountBalanceChart from '../../components/AccountBalanceChart';
 import { APP_NAME } from '../../constants/app';
@@ -82,7 +83,7 @@ export default function AccountDetailPage() {
     : account.currentBalance;
   const inPortfolio = portfolioIds.has(account.id);
 
-  const properties: { label: string; value: string; highlight?: boolean; badge?: string; info?: string }[] = [];
+  const properties: { label: string; value: string; highlight?: boolean; badge?: string; info?: string; infoOnLabel?: boolean }[] = [];
   if (account.accountType) {
     properties.push({ label: t('accountType.label'), value: getAccountTypeLabel(account.accountType) });
   }
@@ -108,12 +109,12 @@ export default function AccountDetailPage() {
     properties.push({ label: t('accounts.totalInterest'), value: formatCurrency(account.totalInterest, cur), highlight: true });
     properties.push({ label: t('accounts.endAmount'), value: formatCurrency(account.endAmount, cur) });
   }
-  properties.push({ label: t('accounts.interestThisMonth'), value: formatCurrency(account.interestThisMonth, cur), info: t('accounts.interestThisMonthInfo') });
+  properties.push({ label: t('detail.accruedThisMonth'), value: formatCurrency(account.interestThisMonth, cur), info: t('accounts.interestThisMonthInfo'), infoOnLabel: true });
 
   const compoundPayouts: AutoCashFlow[] = account.interestType === InterestType.Compound
     ? account.periods
         .filter((p) => p.endDate && p.disbursed > 0)
-        .map((p) => ({ date: p.endDate!, amount: p.disbursed, description: t('accounts.payout') }))
+        .map((p) => ({ date: p.endDate!, amount: p.disbursed, description: t('accounts.interest') }))
         .filter((p) => {
           const monthKey = toMonthKey(todayISO());
           const prevMonthKey = toMonthKey(addMonthsToISO(`${monthKey}-01`, -1));
@@ -177,16 +178,18 @@ export default function AccountDetailPage() {
 
           <section className="detail-properties" aria-label={t('detail.propertiesLabel')}>
             <dl className="detail-properties__grid">
-              {properties.map(({ label, value, highlight, badge, info }) => (
+              {properties.map(({ label, value, highlight, badge, info, infoOnLabel }) => (
                 <div key={label} className={`detail-properties__item${highlight ? ' detail-properties__item--highlight' : ''}`}>
-                  <dt>{label}</dt>
+                  <dt>
+                    {label}
+                    {info && infoOnLabel && (
+                      <InfoPopover label={t('accounts.infoAbout', { label })}>{info}</InfoPopover>
+                    )}
+                  </dt>
                   <dd>
                     {badge ? <span className="comparison-badge comparison-badge--ongoing">{badge}</span> : value}
-                    {info && (
-                      <span className="popover-anchor" tabIndex={0} role="button" aria-label={t('accounts.infoAbout', { label })}>
-                        <InformationCircleIcon className="popover-anchor__icon" aria-hidden="true" />
-                        <span className="popover-anchor__content">{info}</span>
-                      </span>
+                    {info && !infoOnLabel && (
+                      <InfoPopover label={t('accounts.infoAbout', { label })}>{info}</InfoPopover>
                     )}
                   </dd>
                 </div>
@@ -199,13 +202,19 @@ export default function AccountDetailPage() {
               <dl className="detail-status__list">
                 {account.disbursedToDate > 0 && (
                   <div className="detail-status__item">
-                    <dt>{t('accounts.disbursed')}</dt>
+                    <dt>
+                      {t('accounts.disbursed')}
+                      <InfoPopover label={t('accounts.infoAbout', { label: t('accounts.disbursed') })}>{t('accounts.disbursedInfo')}</InfoPopover>
+                    </dt>
                     <dd>{formatCurrency(account.disbursedToDate, cur)}</dd>
                   </div>
                 )}
                 {account.accruedInterest > 0 && (
                   <div className="detail-status__item">
-                    <dt>{t('accounts.accrued')}</dt>
+                    <dt>
+                      {t('accounts.accrued')}
+                      <InfoPopover label={t('accounts.infoAbout', { label: t('accounts.accrued') })}>{t('accounts.accruedInfo')}</InfoPopover>
+                    </dt>
                     <dd>{formatCurrency(account.accruedInterest, cur)}</dd>
                   </div>
                 )}

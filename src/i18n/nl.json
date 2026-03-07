@@ -255,7 +255,8 @@
     "statusLabel": "Huidige status",
     "periodsLabel": "Periodeoverzicht",
     "chartLabel": "Verloop",
-    "monthBreakdownLabel": "Rente-opbouw deze maand"
+    "monthBreakdownLabel": "Rente-opbouw deze maand",
+    "accruedThisMonth": "Opgebouwd deze maand"
   },
   "format": {
     "years_one": "{{count}} jaar",

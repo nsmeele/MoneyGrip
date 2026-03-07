@@ -69,8 +69,8 @@ export function getMonthDays(account: BankAccount, monthKey: string): DayRow[] {
     if (entry) {
       const nextDay = addDay(cursor);
       const dayInterest = entry.balance * (entry.rate / 100) * yearFraction(cursor, nextDay, account.dayCount);
-      rows.push({ date: cursor, balance: entry.balance, rate: entry.rate, dayInterest, cumulative });
       cumulative += dayInterest;
+      rows.push({ date: cursor, balance: entry.balance, rate: entry.rate, dayInterest, cumulative });
     }
     cursor = addDay(cursor);
   }

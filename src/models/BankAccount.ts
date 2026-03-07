@@ -227,8 +227,10 @@ export class BankAccount {
   }
 
   get interestThisMonth(): number {
-    if (this.periods.length === 0 || this.hasExpired || this.hasNotStartedYet) return 0;
-    const key = toMonthKey(todayISO());
+    if (this.periods.length === 0 || this.hasExpired) return 0;
+    const today = todayISO();
+    if (this.startDate && !isBeforeDate(this.startDate, getNextMonthStart(today))) return 0;
+    const key = toMonthKey(today);
     return this.calendarMonthProjection.get(key) ?? 0;
   }
 }

@@ -254,7 +254,8 @@
     "statusLabel": "Current status",
     "periodsLabel": "Period overview",
     "chartLabel": "Progression",
-    "monthBreakdownLabel": "Interest accrual this month"
+    "monthBreakdownLabel": "Interest accrual this month",
+    "accruedThisMonth": "Accrued this month"
   },
   "format": {
     "years_one": "{{count}} year",
