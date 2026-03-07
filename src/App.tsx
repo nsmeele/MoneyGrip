@@ -7,6 +7,8 @@ import { usePortfolio } from './hooks/usePortfolio';
 import { useDataTransfer } from './hooks/useDataTransfer';
 import { useModal } from './context/ModalContext';
 import { useThemeProvider, ThemeContext } from './hooks/useTheme';
+import { useLastTabClear } from './hooks/useLastTabClear';
+import ClearDataButton from './components/ClearDataButton';
 import { AccountCalculator } from './calculator/AccountCalculator';
 import { BankAccountInput } from './models/BankAccountInput';
 import type { BankAccount } from './models/BankAccount';
@@ -20,6 +22,9 @@ export default function App() {
   const transfer = useDataTransfer(results, portfolioIds, replaceResults, mergeResults, replacePortfolio, mergePortfolio);
   const { openModal } = useModal();
   const [showGuide, setShowGuide] = useState(false);
+
+  const hasData = results.length > 0 || portfolioIds.size > 0;
+  const { clearAllData } = useLastTabClear({ hasData, clearResults, clearPortfolio });
 
   const { pendingImport, handleConfirmImport, handleCancelImport } = transfer;
   useEffect(() => {
@@ -133,6 +138,7 @@ export default function App() {
                 <span className={`btn-guide-link__chevron${showGuide ? ' btn-guide-link__chevron--open' : ''}`} aria-hidden="true">&#8250;</span>
               </button>
               <ThemeToggle />
+              {hasData && <ClearDataButton onClear={clearAllData} />}
             </div>
           </div>
 

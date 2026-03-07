@@ -184,7 +184,7 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
               <th><ColumnInfo label="Saldo" info="Je huidige saldo: het startbedrag plus alle stortingen en min alle opnames. Bij rente op rente wordt uitbetaalde rente meegenomen." /></th>
               <th>Rente</th>
               <th>Einddatum</th>
-              <th>Betaling</th>
+              <th>Uitkering</th>
               <th></th>
             </tr>
           </thead>
