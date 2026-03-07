@@ -39,7 +39,7 @@
 }
 
 .modal__btn {
-  @apply px-5 py-2.5 text-sm font-semibold rounded-lg cursor-pointer border-none font-body transition-all duration-200 min-h-[40px];
+  @apply px-5 py-2.5 text-sm font-semibold rounded-lg cursor-pointer border-none font-body transition-all duration-200 min-h-10;
 }
 
 .modal__btn--cancel {

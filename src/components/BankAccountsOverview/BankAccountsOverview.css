@@ -14,7 +14,7 @@
 }
 
 .empty-state p {
-  @apply text-navy-400 text-sm max-w-xs mx-auto leading-relaxed sm:text-[0.9375rem] sm:max-w-sm;
+  @apply text-navy-400 text-sm max-w-xs mx-auto leading-relaxed sm:text-base sm:max-w-sm;
 }
 
 .empty-state__actions {
@@ -33,7 +33,7 @@
 }
 
 .comparison-table {
-  @apply w-full text-[0.8125rem] border-collapse sm:text-[0.9375rem];
+  @apply w-full text-sm border-collapse sm:text-base;
 }
 
 .comparison-table thead {
@@ -41,7 +41,7 @@
 }
 
 .comparison-table th {
-  @apply px-3 py-3 text-left font-semibold uppercase whitespace-nowrap text-[0.6875rem] tracking-[0.07em] sm:px-5 sm:py-3.5 sm:text-xs;
+  @apply px-3 py-3 text-left font-semibold uppercase whitespace-nowrap text-xs tracking-[0.07em] sm:px-5 sm:py-3.5 sm:text-xs;
 }
 
 .comparison-table th:first-child {
@@ -82,7 +82,7 @@
 
 /* ─── Comparison Badge ─── */
 .comparison-badge {
-  @apply inline-block text-[0.625rem] font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-navy-500 bg-navy-100 mr-1 last:mr-0 dark:text-navy-400 dark:bg-navy-800;
+  @apply inline-block text-2xs font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-navy-500 bg-navy-100 mr-1 last:mr-0 dark:text-navy-400 dark:bg-navy-800;
 }
 
 .comparison-badge--progress {
@@ -103,7 +103,7 @@
 
 /* ─── Comparison Row ─── */
 .comparison-row {
-  @apply cursor-pointer select-none transition-colors duration-150 hover:bg-copper-500/[0.04] dark:hover:bg-copper-500/[0.06];
+  @apply cursor-pointer select-none transition-colors duration-150 hover:bg-copper-500/4 dark:hover:bg-copper-500/6;
 }
 
 .comparison-actions {
@@ -111,7 +111,7 @@
 }
 
 .comparison-chevron {
-  @apply inline-flex items-center justify-center w-5 h-5 text-[0.6rem] text-navy-400 transition-transform duration-200;
+  @apply inline-flex items-center justify-center w-5 h-5 text-2xs text-navy-400 transition-transform duration-200;
 }
 
 .comparison-chevron--open {
@@ -143,7 +143,7 @@
 }
 
 .period-table {
-  @apply text-xs border-collapse sm:text-[0.8125rem] lg:w-full;
+  @apply text-xs border-collapse sm:text-sm lg:w-full;
 }
 
 .period-table thead {
@@ -151,7 +151,7 @@
 }
 
 .period-table th {
-  @apply px-3 py-2 text-right font-semibold text-navy-600 uppercase text-[0.625rem] tracking-[0.06em] first:text-left dark:text-navy-300 sm:px-4 sm:py-2.5 sm:text-[0.6875rem];
+  @apply px-3 py-2 text-right font-semibold text-navy-600 uppercase text-2xs tracking-[0.06em] first:text-left dark:text-navy-300 sm:px-4 sm:py-2.5 sm:text-xs;
 }
 
 .period-table td {
@@ -159,11 +159,11 @@
 }
 
 .period-table__date {
-  @apply block text-[0.625rem] text-navy-400 font-normal;
+  @apply block text-2xs text-navy-400 font-normal;
 }
 
 .period-table tbody tr {
-  @apply transition-colors duration-150 hover:bg-copper-500/[0.04] dark:hover:bg-copper-500/[0.06];
+  @apply transition-colors duration-150 hover:bg-copper-500/4 dark:hover:bg-copper-500/6;
 }
 
 .period-table tbody tr:last-child td {
@@ -180,7 +180,7 @@
 }
 
 .period-summary__item dt {
-  @apply text-[0.625rem] font-semibold text-navy-400 uppercase tracking-[0.08em] mb-0.5 dark:text-navy-500;
+  @apply text-2xs font-semibold text-navy-400 uppercase tracking-[0.08em] mb-0.5 dark:text-navy-500;
 }
 
 .period-summary__item dd {

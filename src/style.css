@@ -35,6 +35,11 @@
   --color-success-light: #e8f5ef;
 
   --shadow-input-focus: 0 0 0 3px rgba(200, 149, 108, 0.18);
+
+  --text-3xs: 0.5rem;
+  --text-3xs--line-height: 1;
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 1.2;
 }
 
 /* ─── Dark Theme Color Overrides ─── */
@@ -94,7 +99,7 @@ body {
 }
 
 .hero-top__text h1 {
-  @apply font-display text-[1.75rem] font-semibold text-navy-900 leading-tight tracking-[-0.03em] dark:text-navy-50;
+  @apply font-display text-3xl font-semibold text-navy-900 leading-tight tracking-[-0.03em] dark:text-navy-50;
 }
 
 .app-header__tagline {
@@ -161,7 +166,7 @@ body {
 }
 
 .feature-list__label {
-  @apply text-[0.8125rem] text-navy-600 leading-snug dark:text-navy-300;
+  @apply text-sm text-navy-600 leading-snug dark:text-navy-300;
 }
 
 /* ─── Steps ─── */
@@ -174,11 +179,11 @@ body {
 }
 
 .usage-guide__number {
-  @apply flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full text-[0.625rem] font-bold text-copper-600 bg-copper-100 border border-copper-200/60 dark:text-copper-400 dark:bg-copper-500/15 dark:border-copper-500/30;
+  @apply flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full text-2xs font-bold text-copper-600 bg-copper-100 border border-copper-200/60 dark:text-copper-400 dark:bg-copper-500/15 dark:border-copper-500/30;
 }
 
 .usage-guide__step strong {
-  @apply text-[0.8125rem] font-semibold text-navy-800 block leading-snug dark:text-navy-100;
+  @apply text-sm font-semibold text-navy-800 block leading-snug dark:text-navy-100;
 }
 
 .usage-guide__detail {
@@ -305,7 +310,7 @@ body {
 }
 
 .form-input {
-  @apply w-full px-3.5 py-3 text-[16px] text-navy-900 bg-navy-50 rounded-lg outline-none font-body border-[1.5px] border-solid border-navy-200 transition-all duration-200 dark:text-navy-100 dark:bg-navy-800 dark:border-navy-600;
+  @apply w-full px-3.5 py-3 text-base text-navy-900 bg-navy-50 rounded-lg outline-none font-body border-[1.5px] border-solid border-navy-200 transition-all duration-200 dark:text-navy-100 dark:bg-navy-800 dark:border-navy-600;
 }
 
 .form-input:hover {
@@ -357,7 +362,7 @@ body {
 }
 
 .form-input-prefix .prefix {
-  @apply absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-400 font-medium pointer-events-none text-[0.9375rem] transition-colors duration-200;
+  @apply absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-400 font-medium pointer-events-none text-base transition-colors duration-200;
 }
 
 .form-input-prefix:focus-within .prefix {
@@ -373,7 +378,7 @@ body {
 }
 
 .form-input-suffix .suffix {
-  @apply absolute right-3.5 top-1/2 -translate-y-1/2 text-navy-400 font-medium pointer-events-none text-[0.9375rem] transition-colors duration-200;
+  @apply absolute right-3.5 top-1/2 -translate-y-1/2 text-navy-400 font-medium pointer-events-none text-base transition-colors duration-200;
 }
 
 .form-input-suffix:focus-within .suffix {
@@ -386,7 +391,7 @@ body {
 
 /* ─── Buttons ─── */
 .btn-primary {
-  @apply w-full py-3.5 px-6 text-base font-semibold text-white rounded-xl cursor-pointer border-none font-body tracking-[0.01em] min-h-[48px] bg-linear-to-br from-navy-800 to-navy-900 relative overflow-hidden transition-all duration-200 dark:from-copper-500 dark:to-copper-600 dark:text-navy-950;
+  @apply w-full py-3.5 px-6 text-base font-semibold text-white rounded-xl cursor-pointer border-none font-body tracking-[0.01em] min-h-12 bg-linear-to-br from-navy-800 to-navy-900 relative overflow-hidden transition-all duration-200 dark:from-copper-500 dark:to-copper-600 dark:text-navy-950;
 }
 
 .btn-primary:hover {
@@ -398,7 +403,7 @@ body {
 }
 
 .btn-secondary {
-  @apply w-full py-3.5 px-6 text-base font-semibold rounded-xl cursor-pointer border-none mt-2 font-body text-navy-700 bg-navy-100 min-h-[48px] transition-all duration-200 dark:text-navy-200 dark:bg-navy-800;
+  @apply w-full py-3.5 px-6 text-base font-semibold rounded-xl cursor-pointer border-none mt-2 font-body text-navy-700 bg-navy-100 min-h-12 transition-all duration-200 dark:text-navy-200 dark:bg-navy-800;
 }
 
 .btn-secondary:hover {

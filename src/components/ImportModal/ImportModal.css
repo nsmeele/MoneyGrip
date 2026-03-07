@@ -35,7 +35,7 @@
 }
 
 .import-mode__option--active {
-  @apply border-navy-900 bg-navy-900/[0.03] dark:border-copper-500 dark:bg-copper-500/[0.06];
+  @apply border-navy-900 bg-navy-900/3 dark:border-copper-500 dark:bg-copper-500/6;
 }
 
 .import-mode__option input[type="radio"] {

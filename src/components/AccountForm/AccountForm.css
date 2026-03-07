@@ -14,7 +14,7 @@
 }
 
 .interval-option label {
-  @apply block px-3 py-3 text-sm font-medium text-navy-600 bg-navy-50 rounded-lg cursor-pointer text-center select-none transition-all duration-200 flex items-center justify-center border-[1.5px] border-solid border-navy-200 min-h-[44px] dark:text-navy-300 dark:bg-navy-800 dark:border-navy-600;
+  @apply block px-3 py-3 text-sm font-medium text-navy-600 bg-navy-50 rounded-lg cursor-pointer text-center select-none transition-all duration-200 flex items-center justify-center border-[1.5px] border-solid border-navy-200 min-h-11 dark:text-navy-300 dark:bg-navy-800 dark:border-navy-600;
 }
 
 .interval-option label:hover {

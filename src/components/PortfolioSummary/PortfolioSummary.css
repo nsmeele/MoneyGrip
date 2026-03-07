@@ -44,7 +44,7 @@
 }
 
 .month-nav__label {
-  @apply flex items-center gap-2 min-w-[11rem] justify-center;
+  @apply flex items-center gap-2 min-w-44 justify-center;
 }
 
 .month-nav__label .portfolio-stat-label {
@@ -52,15 +52,15 @@
 }
 
 .month-nav__current {
-  @apply text-[0.5625rem] font-bold uppercase tracking-wide text-copper-500 bg-copper-100 rounded-full px-1.5 py-px dark:text-copper-400 dark:bg-copper-500/15;
+  @apply text-3xs font-bold uppercase tracking-wide text-copper-500 bg-copper-100 rounded-full px-1.5 py-px dark:text-copper-400 dark:bg-copper-500/15;
 }
 
 .month-nav__reset {
-  @apply text-[0.625rem] py-1 px-2.5 rounded-md;
+  @apply text-2xs py-1 px-2.5 rounded-md;
 }
 
 .portfolio-stat-label {
-  @apply font-semibold text-navy-500 uppercase mb-1 text-[0.6875rem] tracking-[0.07em] dark:text-navy-400;
+  @apply font-semibold text-navy-500 uppercase mb-1 text-xs tracking-[0.07em] dark:text-navy-400;
 }
 
 .portfolio-stat-value {
@@ -88,7 +88,7 @@
 }
 
 .portfolio-item-chevron {
-  @apply inline-flex items-center justify-center w-5 h-5 text-[0.6rem] text-navy-400 transition-transform duration-200;
+  @apply inline-flex items-center justify-center w-5 h-5 text-2xs text-navy-400 transition-transform duration-200;
 }
 
 .portfolio-item-chevron--open {
@@ -112,7 +112,7 @@
 }
 
 .badge-expired {
-  @apply inline-block text-[0.625rem] font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-danger bg-danger-light ml-2 align-middle;
+  @apply inline-block text-2xs font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-danger bg-danger-light ml-2 align-middle;
 }
 
 .portfolio-item--upcoming {
@@ -120,11 +120,11 @@
 }
 
 .badge-upcoming {
-  @apply inline-block text-[0.625rem] font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-navy-600 bg-navy-100 ml-2 align-middle dark:text-navy-300 dark:bg-navy-700;
+  @apply inline-block text-2xs font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-navy-600 bg-navy-100 ml-2 align-middle dark:text-navy-300 dark:bg-navy-700;
 }
 
 .badge-interval {
-  @apply inline-block text-[0.625rem] font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-navy-500 bg-navy-100 ml-2 align-middle dark:text-navy-400 dark:bg-navy-800;
+  @apply inline-block text-2xs font-bold uppercase tracking-wide py-px px-1.5 rounded-full text-navy-500 bg-navy-100 ml-2 align-middle dark:text-navy-400 dark:bg-navy-800;
 }
 
 .portfolio-item-amount {
@@ -142,7 +142,7 @@
 }
 
 .portfolio-breakdown__table th {
-  @apply px-2.5 py-1.5 text-right font-semibold text-navy-500 uppercase text-[0.5625rem] tracking-[0.06em] first:text-left bg-navy-50 whitespace-nowrap dark:text-navy-400 dark:bg-navy-800 sm:px-3 sm:text-[0.625rem];
+  @apply px-2.5 py-1.5 text-right font-semibold text-navy-500 uppercase text-3xs tracking-[0.06em] first:text-left bg-navy-50 whitespace-nowrap dark:text-navy-400 dark:bg-navy-800 sm:px-3 sm:text-2xs;
 }
 
 .portfolio-breakdown__table td {
@@ -154,7 +154,7 @@
 }
 
 .portfolio-breakdown__table tbody tr {
-  @apply transition-colors duration-150 hover:bg-copper-500/[0.04] dark:hover:bg-copper-500/[0.06];
+  @apply transition-colors duration-150 hover:bg-copper-500/4 dark:hover:bg-copper-500/6;
 }
 
 .portfolio-breakdown__table tfoot td {

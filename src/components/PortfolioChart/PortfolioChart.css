@@ -25,7 +25,7 @@
 }
 
 .portfolio-chart__container {
-  @apply w-full h-[200px] sm:h-[240px];
+  @apply w-full h-50 sm:h-60;
 }
 
 .portfolio-chart__tooltip {
