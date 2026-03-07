@@ -1,19 +1,16 @@
-import { Fragment, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router';
 import { InformationCircleIcon, PlusIcon, ChevronDownIcon, ChevronUpDownIcon, PencilIcon, XMarkIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline';
 import type { BankAccount } from '../../models/BankAccount';
-import type { CashFlow } from '../../models/CashFlow';
-import type { RateChange } from '../../models/RateChange';
-import { PayoutInterval, getIntervalLabel } from '../../enums/PayoutInterval';
 import { InterestType, getInterestTypeLabel } from '../../enums/InterestType';
+import { getIntervalLabel } from '../../enums/PayoutInterval';
 import type { Currency } from '../../enums/Currency';
 import { formatCurrency, formatDurationShort, formatDate, formatRate } from '../../utils/format';
 import { useLocale } from '../../context/useLocale';
-import CashFlowEditor from '../CashFlowEditor';
-import RateChangeEditor from '../RateChangeEditor';
 import { useModal } from '../../context/useModal';
 import { sortAccounts, type SortColumn, type SortState } from './sortAccounts';
 import './BankAccountsOverview.css';
@@ -47,8 +44,6 @@ interface BankAccountsOverviewProps {
   onTogglePortfolio: (id: string) => void;
   onEdit: (result: BankAccount) => void;
   onNewAccount: () => void;
-  onUpdateCashFlows: (id: string, cashFlows: CashFlow[]) => void;
-  onUpdateRateChanges: (id: string, rateChanges: RateChange[]) => void;
   onImport: () => void;
   onLoadDemo?: () => void;
 }
@@ -104,12 +99,13 @@ function SortIndicator({ column, sortState }: { column: SortColumn; sortState: S
   );
 }
 
-export default function BankAccountsOverview({ results, onRemove, portfolioIds, onTogglePortfolio, onEdit, onNewAccount, onUpdateCashFlows, onUpdateRateChanges, onImport, onLoadDemo }: BankAccountsOverviewProps) {
+export default function BankAccountsOverview({ results, onRemove, portfolioIds, onTogglePortfolio, onEdit, onNewAccount, onImport, onLoadDemo }: BankAccountsOverviewProps) {
   const { t } = useTranslation();
   const { currency: globalCurrency } = useLocale();
-  const [openId, setOpenId] = useState<string | null>(null);
   const [sortState, setSortState] = useState<SortState>(loadSortState);
   const { openModal } = useModal();
+  const navigate = useNavigate();
+  const { lang } = useParams();
 
   function toggleSort(column: SortColumn) {
     setSortState(prev => {
@@ -159,7 +155,6 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
 
   const sorted = sortAccounts(results, sortState);
 
-
   return (
     <section className="results-section" aria-label={t('accounts.sectionLabel')}>
       <div className="section-header">
@@ -180,7 +175,6 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
           <table className="comparison-table">
           <thead>
             <tr>
-              <th></th>
               <th
                 className="comparison-table__th--sortable"
                 onClick={() => toggleSort('balance')}
@@ -207,179 +201,74 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
           </thead>
           <tbody>
             {sorted.map((r) => {
-              const isOpen = openId === r.id;
               const cur = (r.currency as Currency | undefined) ?? globalCurrency;
               return (
-                <Fragment key={r.id}>
-                  <tr
-                    className="comparison-row"
-                    onClick={() => setOpenId(isOpen ? null : r.id)}
-                  >
-                    <td>
-                      <ChevronDownIcon className={`comparison-chevron${isOpen ? ' comparison-chevron--open' : ''}`} aria-hidden="true" />
-                    </td>
-                    <td className="amount">
-                      {formatCurrency(r.interestType === InterestType.Compound ? r.currentBalance + r.disbursedToDate : r.currentBalance, cur)}
-                      <span className="comparison-rate">@ {formatRate(r.annualInterestRate, cur)}%</span>
-                    </td>
-                    <td>
-                      {r.isOngoing
-                        ? <span className="comparison-badge comparison-badge--ongoing">{t('accounts.ongoing')}</span>
-                        : <>
-                            {r.endDate && formatDate(r.endDate)}{' '}
-                            <span className="comparison-badge">{formatDurationShort(r.durationMonths)}</span>
-                            {r.hasExpired && (
-                              <span className="comparison-badge comparison-badge--complete">{t('accounts.completed')}</span>
-                            )}
-                          </>
-                      }
-                    </td>
-                    <td>
-                      {getIntervalLabel(r.interval)} <span className="comparison-badge">{getInterestTypeLabel(r.interestType)}</span>
-                    </td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <div className="comparison-actions">
+                <tr
+                  key={r.id}
+                  className="comparison-row"
+                  onClick={() => navigate(`/${lang}/account/${r.id}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/${lang}/account/${r.id}`); } }}
+                  tabIndex={0}
+                  role="link"
+                >
+                  <td className="amount">
+                    {formatCurrency(r.interestType === InterestType.Compound ? r.currentBalance + r.disbursedToDate : r.currentBalance, cur)}
+                    <span className="comparison-rate">@ {formatRate(r.annualInterestRate, cur)}%</span>
+                  </td>
+                  <td>
+                    {r.isOngoing
+                      ? <span className="comparison-badge comparison-badge--ongoing">{t('accounts.ongoing')}</span>
+                      : <>
+                          {r.endDate && formatDate(r.endDate)}{' '}
+                          <span className="comparison-badge">{formatDurationShort(r.durationMonths)}</span>
+                          {r.hasExpired && (
+                            <span className="comparison-badge comparison-badge--complete">{t('accounts.completed')}</span>
+                          )}
+                        </>
+                    }
+                  </td>
+                  <td>
+                    {getIntervalLabel(r.interval)} <span className="comparison-badge">{getInterestTypeLabel(r.interestType)}</span>
+                  </td>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <div className="comparison-actions">
+                    <button
+                      className="btn-icon"
+                      title={t('accounts.edit')}
+                      onClick={() => onEdit(r)}
+                      aria-label={t('accounts.edit')}
+                    >
+                      <PencilIcon aria-hidden="true" />
+                    </button>
+                    <button
+                      className={`btn-portfolio${portfolioIds.has(r.id) ? ' btn-portfolio--active' : ''}`}
+                      title={portfolioIds.has(r.id) ? t('accounts.removeFromPortfolio') : t('accounts.addToPortfolio')}
+                      onClick={() => onTogglePortfolio(r.id)}
+                      aria-label={portfolioIds.has(r.id) ? t('accounts.removeFromPortfolio') : t('accounts.addToPortfolio')}
+                    >
+                      {portfolioIds.has(r.id) ? <StarIconSolid aria-hidden="true" /> : <StarIconOutline aria-hidden="true" />}
+                    </button>
+                    {import.meta.env.DEV && (
                       <button
                         className="btn-icon"
-                        title={t('accounts.edit')}
-                        onClick={() => onEdit(r)}
-                        aria-label={t('accounts.edit')}
+                        title={t('accounts.copyData')}
+                        onClick={() => navigator.clipboard.writeText(JSON.stringify(r, null, 2))}
+                        aria-label={t('accounts.copyData')}
                       >
-                        <PencilIcon aria-hidden="true" />
+                        <ClipboardDocumentIcon aria-hidden="true" />
                       </button>
-                      <button
-                        className={`btn-portfolio${portfolioIds.has(r.id) ? ' btn-portfolio--active' : ''}`}
-                        title={portfolioIds.has(r.id) ? t('accounts.removeFromPortfolio') : t('accounts.addToPortfolio')}
-                        onClick={() => onTogglePortfolio(r.id)}
-                        aria-label={portfolioIds.has(r.id) ? t('accounts.removeFromPortfolio') : t('accounts.addToPortfolio')}
-                      >
-                        {portfolioIds.has(r.id) ? <StarIconSolid aria-hidden="true" /> : <StarIconOutline aria-hidden="true" />}
-                      </button>
-                      {import.meta.env.DEV && (
-                        <button
-                          className="btn-icon"
-                          title={t('accounts.copyData')}
-                          onClick={() => navigator.clipboard.writeText(JSON.stringify(r, null, 2))}
-                          aria-label={t('accounts.copyData')}
-                        >
-                          <ClipboardDocumentIcon aria-hidden="true" />
-                        </button>
-                      )}
-                      <button
-                        className="btn-icon"
-                        title={t('accounts.delete')}
-                        onClick={() => handleRemove(r.id)}
-                        aria-label={t('accounts.delete')}
-                      >
-                        <XMarkIcon aria-hidden="true" />
-                      </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {isOpen && (
-                    <tr className="period-detail-row">
-                      <td colSpan={5}>
-                        {(r.disbursedToDate > 0 || r.accruedInterest > 0 || r.nextPayoutDate) && (
-                          <div className="period-detail-status">
-                            {r.disbursedToDate > 0 && (
-                              <span className="period-detail-status__item">
-                                <strong><ColumnInfo label={t('accounts.disbursed')} info={t('accounts.disbursedInfo')} /></strong> {formatCurrency(r.disbursedToDate, cur)}
-                              </span>
-                            )}
-                            {r.accruedInterest > 0 && (
-                              <span className="period-detail-status__item">
-                                <strong><ColumnInfo label={t('accounts.accrued')} info={t('accounts.accruedInfo')} /></strong> {formatCurrency(r.accruedInterest, cur)}
-                              </span>
-                            )}
-                            {r.nextPayoutDate && (
-                              <span className="period-detail-status__item">
-                                <strong>{t('accounts.nextPayout')}</strong> {formatDate(r.nextPayoutDate)}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        <div className="period-detail-layout">
-                          <div className="period-table-wrapper">
-                            <table className="period-table">
-                              <thead>
-                                <tr>
-                                  <th>{t('accounts.period')}</th>
-                                  <th>{t('accounts.startBalance')}</th>
-                                  {r.totalDeposited !== 0 && <th>{t('accounts.deposited')}</th>}
-                                  <th>{t('accounts.interest')}</th>
-                                  <th>{t('accounts.disbursed')}</th>
-                                  <th>{t('accounts.endBalance')}</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {r.periods.map((p, idx) => {
-                                  const periodStart = idx === 0 ? r.startDate : r.periods[idx - 1].endDate;
-                                  return (
-                                  <tr key={p.period}>
-                                    <td>
-                                      {p.periodLabel}
-                                      {periodStart && p.endDate && (
-                                        <span className="period-table__date">{formatDate(periodStart)} – {formatDate(p.endDate)}</span>
-                                      )}
-                                    </td>
-                                    <td>{formatCurrency(p.startBalance, cur)}</td>
-                                    {r.totalDeposited !== 0 && (
-                                      <td className={p.deposited > 0 ? 'text-success' : p.deposited < 0 ? 'text-danger' : ''}>
-                                        {p.deposited !== 0 ? formatCurrency(p.deposited, cur) : '—'}
-                                      </td>
-                                    )}
-                                    <td>{formatCurrency(p.interestEarned, cur)}</td>
-                                    <td>{formatCurrency(p.disbursed, cur)}</td>
-                                    <td>{formatCurrency(idx === r.periods.length - 1 && r.interval === PayoutInterval.AtMaturity ? r.endAmount : p.endBalance, cur)}</td>
-                                  </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
-                          <aside className="period-summary">
-                            <dl className="period-summary__list">
-                              <div className="period-summary__item">
-                                <dt>{t('accounts.deposit')}</dt>
-                                <dd>{formatCurrency(r.startAmount, cur)}</dd>
-                              </div>
-                              <div className="period-summary__item">
-                                <dt>{t('accounts.totalInterest')}</dt>
-                                <dd className="period-summary__highlight">{formatCurrency(r.totalInterest, cur)}</dd>
-                              </div>
-                              <div className="period-summary__item">
-                                <dt>{t('accounts.endAmount')}</dt>
-                                <dd>{formatCurrency(r.endAmount, cur)}</dd>
-                              </div>
-                              {r.interestThisMonth > 0 && (
-                                <div className="period-summary__item">
-                                  <dt>{t('accounts.interestThisMonth')}</dt>
-                                  <dd>{formatCurrency(r.interestThisMonth, cur)}</dd>
-                                </div>
-                              )}
-                            </dl>
-                          </aside>
-                        </div>
-                        <div className="period-editors">
-                          {r.hasCashFlows && (
-                            <CashFlowEditor
-                              cashFlows={r.cashFlows}
-                              onUpdate={(cfs) => onUpdateCashFlows(r.id, cfs)}
-                              currency={cur}
-                            />
-                          )}
-                          {r.isVariableRate && (
-                            <RateChangeEditor
-                              rateChanges={r.rateChanges}
-                              currency={cur}
-                              onUpdate={(rcs) => onUpdateRateChanges(r.id, rcs)}
-                            />
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
+                    )}
+                    <button
+                      className="btn-icon"
+                      title={t('accounts.delete')}
+                      onClick={() => handleRemove(r.id)}
+                      aria-label={t('accounts.delete')}
+                    >
+                      <XMarkIcon aria-hidden="true" />
+                    </button>
+                    </div>
+                  </td>
+                </tr>
               );
             })}
           </tbody>

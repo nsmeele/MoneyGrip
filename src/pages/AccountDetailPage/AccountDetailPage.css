@@ -1,0 +1,276 @@
+@reference "../../style.css";
+
+/* ─── Detail Header ─── */
+.detail-header {
+  @apply pt-4 pb-4 mb-6 border-b border-navy-200/70 dark:border-navy-700/50 sm:pt-6 sm:pb-5 lg:pt-8;
+}
+
+.detail-header__nav {
+  @apply flex items-center justify-between;
+}
+
+.detail-header__logo {
+  @apply font-display text-sm font-semibold text-navy-400 no-underline transition-colors duration-200 hover:text-copper-600 dark:text-navy-500 dark:hover:text-copper-400;
+}
+
+/* ─── Back Button ─── */
+.detail-back {
+  @apply inline-flex items-center gap-1.5 text-sm font-medium text-navy-500 no-underline transition-colors duration-200 hover:text-copper-600 dark:text-navy-400 dark:hover:text-copper-400;
+}
+
+.detail-back svg {
+  @apply w-4 h-4;
+}
+
+/* ─── Not Found ─── */
+.detail-not-found {
+  @apply text-center py-16 px-5 animate-[fadeInUp_0.5s_ease_both];
+}
+
+.detail-not-found h2 {
+  @apply font-display text-xl font-semibold text-navy-700 mb-2 dark:text-navy-200;
+}
+
+.detail-not-found p {
+  @apply text-navy-400 text-sm mb-6 max-w-xs mx-auto;
+}
+
+.detail-not-found .btn-action {
+  @apply inline-flex;
+}
+
+/* ─── Detail Page ─── */
+.detail-page {
+  @apply pb-10 animate-[fadeInUp_0.4s_ease_both] lg:pb-16;
+}
+
+/* ─── Hero ─── */
+.detail-hero {
+  @apply flex flex-col gap-4 mb-6 sm:mb-8 lg:flex-row lg:items-start lg:justify-between;
+}
+
+.detail-hero__title {
+  @apply font-display text-2xl font-semibold text-navy-900 leading-tight tracking-[-0.02em] dark:text-navy-50 sm:text-3xl;
+}
+
+.detail-hero__rate {
+  @apply ml-2 text-lg font-normal text-navy-400 dark:text-navy-500 sm:text-xl;
+}
+
+.detail-hero__next-payout {
+  @apply mt-3 flex items-baseline gap-2 flex-wrap;
+}
+
+.detail-hero__next-payout-label {
+  @apply text-2xs font-semibold text-copper-600 uppercase tracking-[0.08em] dark:text-copper-400;
+}
+
+.detail-hero__next-payout-amount {
+  @apply font-display text-xl font-semibold text-copper-600 tabular-nums dark:text-copper-400 sm:text-2xl;
+}
+
+.detail-hero__next-payout-date {
+  @apply text-sm text-navy-400 dark:text-navy-500;
+}
+
+.detail-hero__badges {
+  @apply flex flex-wrap gap-1.5 mt-2;
+}
+
+.detail-hero__actions {
+  @apply flex flex-wrap items-center gap-2;
+}
+
+.btn-action--portfolio-active {
+  @apply text-copper-600 border-copper-500/30 dark:text-copper-400 dark:border-copper-400/30;
+}
+
+/* ─── Properties Section ─── */
+.detail-properties {
+  @apply mb-6 p-4 rounded-2xl bg-white border border-navy-200/60 shadow-sm dark:bg-navy-900 dark:border-navy-700/50 dark:shadow-none sm:p-6 sm:mb-8;
+}
+
+.detail-properties__grid {
+  @apply grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-4;
+}
+
+.detail-properties__item dt {
+  @apply text-2xs font-semibold text-navy-400 uppercase tracking-[0.08em] mb-0.5 dark:text-navy-500;
+}
+
+.detail-properties__item dd {
+  @apply text-sm font-medium text-navy-800 dark:text-navy-100;
+}
+
+.detail-properties__item--highlight dd {
+  @apply text-copper-600 dark:text-copper-400;
+}
+
+/* ─── Live Status ─── */
+.detail-status {
+  @apply mb-6 p-4 rounded-2xl bg-copper-100/40 border border-copper-200/50 dark:bg-copper-500/5 dark:border-copper-500/15 sm:p-5 sm:mb-8;
+}
+
+.detail-status__list {
+  @apply flex flex-wrap gap-4 sm:gap-8;
+}
+
+.detail-status__item {
+  @apply flex-1 min-w-[8rem];
+}
+
+.detail-status__item dt {
+  @apply text-2xs font-semibold text-copper-600 uppercase tracking-[0.08em] mb-0.5 dark:text-copper-400;
+}
+
+.detail-status__item dd {
+  @apply text-base font-semibold text-navy-900 tabular-nums dark:text-navy-50 sm:text-lg;
+}
+
+/* ─── Periods Section ─── */
+.detail-periods {
+  @apply min-w-0 flex-1 p-4 rounded-2xl bg-white border border-navy-200/60 shadow-sm dark:bg-navy-900 dark:border-navy-700/50 dark:shadow-none sm:p-6;
+}
+
+.detail-periods h2 {
+  @apply font-display text-base font-semibold text-navy-900 mb-4 dark:text-navy-50 sm:text-lg;
+}
+
+/* ─── Period Table (reused from overview, scoped here) ─── */
+.detail-periods .period-table-wrapper {
+  @apply overflow-x-auto min-w-0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.detail-periods .period-table {
+  @apply text-xs border-collapse sm:text-sm lg:w-full;
+}
+
+.detail-periods .period-table thead {
+  @apply bg-navy-50 dark:bg-navy-800;
+}
+
+.detail-periods .period-table th {
+  @apply px-3 py-2 text-right font-semibold text-navy-600 uppercase text-2xs tracking-[0.06em] first:text-left dark:text-navy-300 sm:px-4 sm:py-2.5 sm:text-xs;
+}
+
+.detail-periods .period-table td {
+  @apply px-3 py-2 text-right text-navy-700 border-b border-navy-100 tabular-nums first:text-left first:text-navy-500 first:font-medium dark:text-navy-200 dark:border-navy-700 dark:first:text-navy-400 sm:px-4 sm:py-[9px];
+}
+
+.detail-periods .period-table__date {
+  @apply block text-2xs text-navy-400 font-normal;
+}
+
+.detail-periods .period-table tbody tr {
+  @apply transition-colors duration-150 hover:bg-copper-500/4 dark:hover:bg-copper-500/6;
+}
+
+.detail-periods .period-table tbody tr:last-child td {
+  @apply border-b-0;
+}
+
+/* ─── Scrollbar ─── */
+.detail-periods .period-table-wrapper::-webkit-scrollbar {
+  @apply h-1.5;
+}
+
+.detail-periods .period-table-wrapper::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.detail-periods .period-table-wrapper::-webkit-scrollbar-thumb {
+  @apply bg-navy-300/50 rounded-full dark:bg-navy-600/50;
+}
+
+.detail-periods .period-table-wrapper::-webkit-scrollbar-thumb:hover {
+  @apply bg-navy-300 dark:bg-navy-600;
+}
+
+/* ─── Month Breakdown ─── */
+.detail-month-breakdown {
+  @apply mb-6 p-4 rounded-2xl bg-white border border-navy-200/60 shadow-sm dark:bg-navy-900 dark:border-navy-700/50 dark:shadow-none sm:p-6 sm:mb-8;
+}
+
+.detail-month-breakdown h2 {
+  @apply font-display text-base font-semibold text-navy-900 mb-4 dark:text-navy-50 sm:text-lg;
+}
+
+.detail-month-breakdown .period-table-wrapper {
+  @apply overflow-x-auto min-w-0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.detail-month-breakdown .period-table {
+  @apply text-xs border-collapse sm:text-sm lg:w-full;
+}
+
+.detail-month-breakdown .period-table thead {
+  @apply bg-navy-50 dark:bg-navy-800;
+}
+
+.detail-month-breakdown .period-table th {
+  @apply px-3 py-2 text-right font-semibold text-navy-600 uppercase text-2xs tracking-[0.06em] first:text-left dark:text-navy-300 sm:px-4 sm:py-2.5 sm:text-xs;
+}
+
+.detail-month-breakdown .period-table td {
+  @apply px-3 py-2 text-right text-navy-700 border-b border-navy-100 tabular-nums first:text-left first:text-navy-500 first:font-medium dark:text-navy-200 dark:border-navy-700 dark:first:text-navy-400 sm:px-4 sm:py-[9px];
+}
+
+.detail-month-breakdown .period-table tbody tr {
+  @apply transition-colors duration-150 hover:bg-copper-500/4 dark:hover:bg-copper-500/6;
+}
+
+.detail-month-breakdown .period-table tbody tr:last-child td {
+  @apply border-b-0;
+}
+
+.detail-month-breakdown .period-table-wrapper::-webkit-scrollbar {
+  @apply h-1.5;
+}
+
+.detail-month-breakdown .period-table-wrapper::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.detail-month-breakdown .period-table-wrapper::-webkit-scrollbar-thumb {
+  @apply bg-navy-300/50 rounded-full dark:bg-navy-600/50;
+}
+
+.detail-month-breakdown .period-table-wrapper::-webkit-scrollbar-thumb:hover {
+  @apply bg-navy-300 dark:bg-navy-600;
+}
+
+/* ─── Collapsible Sections ─── */
+.detail-collapsible__summary {
+  @apply flex items-center gap-2 cursor-pointer select-none list-none;
+}
+
+details[open] > .detail-collapsible__summary {
+  @apply mb-4;
+}
+
+.detail-collapsible__summary h2 {
+  @apply mb-0;
+}
+
+.detail-collapsible__summary::-webkit-details-marker {
+  display: none;
+}
+
+.detail-collapsible__icon {
+  @apply w-4 h-4 text-navy-400 transition-transform duration-200 dark:text-navy-500;
+}
+
+details[open] > .detail-collapsible__summary .detail-collapsible__icon {
+  @apply rotate-90;
+}
+
+/* ─── Editors Section ─── */
+.detail-editors {
+  @apply flex flex-col gap-4 mb-6 p-4 rounded-2xl bg-white border border-navy-200/60 shadow-sm dark:bg-navy-900 dark:border-navy-700/50 dark:shadow-none sm:flex-row sm:gap-6 sm:p-6 sm:mb-8;
+}
+
+.detail-editors > * {
+  @apply sm:flex-1 sm:min-w-0;
+}

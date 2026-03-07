@@ -1,0 +1,48 @@
+@reference "../../style.css";
+
+/* ─── Account Balance Chart ─── */
+.account-chart {
+  @apply mb-6 p-4 rounded-2xl bg-white border border-navy-200/60 shadow-sm dark:bg-navy-900 dark:border-navy-700/50 dark:shadow-none sm:p-6 sm:mb-8;
+}
+
+.account-chart h2 {
+  @apply font-display text-base font-semibold text-navy-900 mb-4 dark:text-navy-50 sm:text-lg;
+}
+
+.account-chart__container {
+  @apply w-full h-48 sm:h-64;
+}
+
+/* ─── Tooltip ─── */
+.account-chart__tooltip {
+  @apply bg-navy-900 text-white text-xs rounded-lg px-3 py-2.5 border border-navy-700;
+  box-shadow: 0 4px 16px rgba(10, 22, 40, 0.25);
+}
+
+.account-chart__tooltip-label {
+  @apply text-navy-300 mb-1.5 capitalize;
+}
+
+.account-chart__tooltip-row {
+  @apply flex items-center gap-2 py-0.5;
+}
+
+.account-chart__tooltip-dot {
+  @apply w-2 h-2 rounded-full flex-shrink-0;
+}
+
+.account-chart__tooltip-dot--accrued {
+  @apply bg-copper-500 dark:bg-copper-400;
+}
+
+.account-chart__tooltip-dot--disbursed {
+  @apply bg-navy-500 dark:bg-navy-300;
+}
+
+.account-chart__tooltip-name {
+  @apply text-navy-300;
+}
+
+.account-chart__tooltip-value {
+  @apply font-bold text-white tabular-nums ml-auto;
+}

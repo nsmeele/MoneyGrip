@@ -150,6 +150,10 @@ body {
   @apply font-display text-2xl font-semibold text-navy-900 leading-tight tracking-[-0.03em] dark:text-navy-50;
 }
 
+.app-header__logo-link {
+  @apply text-inherit no-underline transition-colors duration-200 hover:text-copper-600 dark:hover:text-copper-400;
+}
+
 .app-header__tagline {
   @apply font-display text-sm text-copper-600 mt-0.5 font-medium italic leading-snug dark:text-copper-400 sm:text-base sm:mt-1;
 }

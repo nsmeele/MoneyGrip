@@ -6,13 +6,20 @@ import { formatCurrency, formatDate } from '../../utils/format';
 import { CURRENCY_SYMBOLS, type Currency } from '../../enums/Currency';
 import './CashFlowEditor.css';
 
+export interface AutoCashFlow {
+  date: string;
+  amount: number;
+  description: string;
+}
+
 interface CashFlowEditorProps {
   cashFlows: CashFlow[];
   onUpdate: (cashFlows: CashFlow[]) => void;
   currency: string;
+  autoEntries?: AutoCashFlow[];
 }
 
-export default function CashFlowEditor({ cashFlows, onUpdate, currency }: CashFlowEditorProps) {
+export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntries = [] }: CashFlowEditorProps) {
   const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [isWithdrawal, setIsWithdrawal] = useState(false);
@@ -59,7 +66,18 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency }: CashFl
     onUpdate(cashFlows.filter((cf) => cf.id !== id));
   }
 
-  const sorted = [...cashFlows].sort((a, b) => a.date.localeCompare(b.date));
+  type DisplayEntry =
+    | { type: 'manual'; cf: CashFlow }
+    | { type: 'auto'; entry: AutoCashFlow };
+
+  const allEntries: DisplayEntry[] = [
+    ...cashFlows.map((cf): DisplayEntry => ({ type: 'manual', cf })),
+    ...autoEntries.map((entry): DisplayEntry => ({ type: 'auto', entry })),
+  ].sort((a, b) => {
+    const dateA = a.type === 'manual' ? a.cf.date : a.entry.date;
+    const dateB = b.type === 'manual' ? b.cf.date : b.entry.date;
+    return dateB.localeCompare(dateA);
+  });
 
   return (
     <div className="cashflow-editor">
@@ -165,36 +183,55 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency }: CashFl
         </div>
       )}
 
-      {sorted.length === 0 && !isAdding && (
+      {allEntries.length === 0 && !isAdding && (
         <div className="cashflow-editor__empty">{t('cashflow.empty')}</div>
       )}
 
-      {sorted.length > 0 && (
+      {allEntries.length > 0 && (
         <div className="cashflow-editor__list">
-          {sorted.map((cf) => (
-            <div key={cf.id} className="cashflow-item">
-              <span className="cashflow-item__date">{formatDate(cf.date)}</span>
-              <span className="cashflow-item__desc">
-                {cf.description}
-                {cf.recurring && (
-                  <span className="cashflow-item__badge">
-                    {recurringOptions.find((o) => o.value === cf.recurring!.intervalMonths)?.label ?? t('cashflow.recurring')}
+          {allEntries.map((entry) => {
+            if (entry.type === 'auto') {
+              const { date: d, amount: amt, description: desc } = entry.entry;
+              return (
+                <div key={`auto-${d}`} className="cashflow-item cashflow-item--auto">
+                  <span className="cashflow-item__date">{formatDate(d)}</span>
+                  <span className="cashflow-item__desc">
+                    {desc}
+                    <span className="cashflow-item__badge cashflow-item__badge--auto">{t('cashflow.automatic')}</span>
                   </span>
-                )}
-              </span>
-              <span className={`cashflow-item__amount${cf.amount >= 0 ? ' cashflow-item__amount--deposit' : ' cashflow-item__amount--withdrawal'}`}>
-                {cf.amount >= 0 ? '+' : '\u2212'}{formatCurrency(Math.abs(cf.amount), currency)}
-              </span>
-              <button
-                className="btn-icon"
-                title={t('cashflow.delete')}
-                onClick={() => handleRemove(cf.id)}
-                aria-label={t('cashflow.deleteTransaction', { description: cf.description })}
-              >
-                <XMarkIcon aria-hidden="true" />
-              </button>
-            </div>
-          ))}
+                  <span className="cashflow-item__amount cashflow-item__amount--deposit">
+                    +{formatCurrency(amt, currency)}
+                  </span>
+                  <span className="btn-icon-spacer" />
+                </div>
+              );
+            }
+            const cf = entry.cf;
+            return (
+              <div key={cf.id} className="cashflow-item">
+                <span className="cashflow-item__date">{formatDate(cf.date)}</span>
+                <span className="cashflow-item__desc">
+                  {cf.description}
+                  {cf.recurring && (
+                    <span className="cashflow-item__badge">
+                      {recurringOptions.find((o) => o.value === cf.recurring!.intervalMonths)?.label ?? t('cashflow.recurring')}
+                    </span>
+                  )}
+                </span>
+                <span className={`cashflow-item__amount${cf.amount >= 0 ? ' cashflow-item__amount--deposit' : ' cashflow-item__amount--withdrawal'}`}>
+                  {cf.amount >= 0 ? '+' : '\u2212'}{formatCurrency(Math.abs(cf.amount), currency)}
+                </span>
+                <button
+                  className="btn-icon"
+                  title={t('cashflow.delete')}
+                  onClick={() => handleRemove(cf.id)}
+                  aria-label={t('cashflow.deleteTransaction', { description: cf.description })}
+                >
+                  <XMarkIcon aria-hidden="true" />
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

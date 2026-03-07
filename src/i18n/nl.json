@@ -77,6 +77,7 @@
     "totalInterest": "Totale rente",
     "endAmount": "Eindbedrag",
     "interestThisMonth": "Rente deze maand",
+    "interestThisMonthInfo": "De berekende rente voor de huidige kalendermaand, op basis van je saldo, rentepercentage en dagtellingconventie.",
     "infoAbout": "Info over {{label}}",
     "sortBy": "Sorteer op {{column}}"
   },
@@ -132,7 +133,8 @@
     "recurringAnnually": "Per jaar",
     "empty": "Nog geen transacties",
     "delete": "Verwijderen",
-    "deleteTransaction": "Verwijder transactie {{description}}"
+    "deleteTransaction": "Verwijder transactie {{description}}",
+    "automatic": "automatisch"
   },
   "rateChange": {
     "title": "Rentewijzigingen",
@@ -244,6 +246,16 @@
     "ariaLabel": "Valuta selecteren",
     "label": "Valuta",
     "defaultOption": "Standaard ({{code}})"
+  },
+  "detail": {
+    "backToOverview": "Terug naar overzicht",
+    "notFound": "Rekening niet gevonden",
+    "notFoundDescription": "De rekening die je zoekt bestaat niet of is verwijderd.",
+    "propertiesLabel": "Rekeninggegevens",
+    "statusLabel": "Huidige status",
+    "periodsLabel": "Periodeoverzicht",
+    "chartLabel": "Verloop",
+    "monthBreakdownLabel": "Rente-opbouw deze maand"
   },
   "format": {
     "years_one": "{{count}} jaar",

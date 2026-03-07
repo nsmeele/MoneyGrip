@@ -77,6 +77,7 @@
     "totalInterest": "Total interest",
     "endAmount": "End amount",
     "interestThisMonth": "Interest this month",
+    "interestThisMonthInfo": "The calculated interest for the current calendar month, based on your balance, interest rate and day count convention.",
     "infoAbout": "Info about {{label}}",
     "sortBy": "Sort by {{column}}"
   },
@@ -132,7 +133,8 @@
     "recurringAnnually": "Annually",
     "empty": "No transactions yet",
     "delete": "Delete",
-    "deleteTransaction": "Delete transaction {{description}}"
+    "deleteTransaction": "Delete transaction {{description}}",
+    "automatic": "automatic"
   },
   "rateChange": {
     "title": "Rate changes",
@@ -243,6 +245,16 @@
     "ariaLabel": "Select currency",
     "label": "Currency",
     "defaultOption": "Default ({{code}})"
+  },
+  "detail": {
+    "backToOverview": "Back to overview",
+    "notFound": "Account not found",
+    "notFoundDescription": "The account you are looking for does not exist or has been deleted.",
+    "propertiesLabel": "Account details",
+    "statusLabel": "Current status",
+    "periodsLabel": "Period overview",
+    "chartLabel": "Progression",
+    "monthBreakdownLabel": "Interest accrual this month"
   },
   "format": {
     "years_one": "{{count}} year",

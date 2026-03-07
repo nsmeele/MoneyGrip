@@ -116,6 +116,12 @@ export class BankAccount {
     return next;
   }
 
+  get nextPayoutAmount(): number | undefined {
+    const nextDate = this.nextPayoutDate;
+    if (!nextDate) return undefined;
+    return this.calendarMonthDisbursement.get(toMonthKey(nextDate));
+  }
+
   get accruedInterest(): number {
     if (this.periods.length === 0 || !this.startDate) return 0;
 

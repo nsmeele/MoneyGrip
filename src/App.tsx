@@ -1,15 +1,17 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
+import {Routes, Route, Link, useParams} from 'react-router';
 import BankAccountsOverview from './components/BankAccountsOverview';
 import PortfolioSummary from './components/PortfolioSummary';
+import AccountDetailPage from './pages/AccountDetailPage';
 import ThemeToggle from './components/ThemeToggle/ThemeToggle';
 import LanguageSwitcher from './components/LanguageSwitcher';
-import {useResultStorage} from './hooks/useResultStorage';
-import {usePortfolio} from './hooks/usePortfolio';
 import {useDataTransfer} from './hooks/useDataTransfer';
 import {useModal} from './context/useModal';
 import {useThemeProvider, ThemeContext} from './hooks/useTheme';
 import {LocaleProvider} from './context/LocaleContext';
+import {AccountStoreProvider} from './context/AccountStoreProvider';
+import {useAccountStore} from './context/useAccountStore';
 import CurrencySelector from './components/CurrencySelector';
 import {useLastTabClear} from './hooks/useLastTabClear';
 import ClearDataButton from './components/ClearDataButton';
@@ -20,11 +22,7 @@ import {
     ArrowDownTrayIcon,
     ChevronDownIcon
 } from '@heroicons/react/24/outline';
-import {AccountCalculator} from './calculator/AccountCalculator';
-import {BankAccountInput} from './models/BankAccountInput';
 import type {BankAccount} from './models/BankAccount';
-import type {CashFlow} from './models/CashFlow';
-import type {RateChange} from './models/RateChange';
 import {demoData} from './transfer/demoData';
 import {ModalProvider} from './context/ModalContext';
 import {APP_NAME, GITHUB_URL} from './constants/app';
@@ -36,9 +34,14 @@ export default function App() {
     return (
         <LocaleProvider>
             <ThemeContext.Provider value={themeCtx}>
-                <ModalProvider>
-                    <AppContent/>
-                </ModalProvider>
+                <AccountStoreProvider>
+                    <ModalProvider>
+                        <Routes>
+                            <Route path="account/:id" element={<AccountDetailPage/>}/>
+                            <Route path="*" element={<AppContent/>}/>
+                        </Routes>
+                    </ModalProvider>
+                </AccountStoreProvider>
             </ThemeContext.Provider>
         </LocaleProvider>
     );
@@ -47,16 +50,13 @@ export default function App() {
 function AppContent() {
     useDocumentMeta();
     const {t} = useTranslation();
+    const {lang} = useParams();
     const {
-        results,
-        addResult,
-        updateResult,
-        removeResult,
-        clearResults,
-        replaceResults,
-        mergeResults
-    } = useResultStorage();
-    const {portfolioIds, togglePortfolio, clearPortfolio, replacePortfolio, mergePortfolio} = usePortfolio();
+        results, addResult, updateResult, removeResult,
+        clearResults, replaceResults, mergeResults,
+        portfolioIds, togglePortfolio, clearPortfolio,
+        replacePortfolio, mergePortfolio,
+    } = useAccountStore();
     const transfer = useDataTransfer(results, portfolioIds, replaceResults, mergeResults, replacePortfolio, mergePortfolio);
     const {openModal} = useModal();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -139,52 +139,6 @@ function AppContent() {
         replacePortfolio(demoData.portfolioIds);
     }
 
-    function handleUpdateCashFlows(id: string, cashFlows: CashFlow[]) {
-        const existing = results.find((r) => r.id === id);
-        if (!existing) return;
-
-        const calc = new AccountCalculator();
-        const input = new BankAccountInput(
-            existing.startAmount,
-            existing.annualInterestRate,
-            existing.durationMonths,
-            existing.interval,
-            existing.interestType,
-            existing.startDate,
-            cashFlows,
-            existing.isOngoing,
-            existing.dayCount,
-            existing.rateChanges,
-            existing.isVariableRate,
-            existing.currency,
-        );
-        const recalculated = calc.calculate(input);
-        updateResult(id, recalculated);
-    }
-
-    function handleUpdateRateChanges(id: string, rateChanges: RateChange[]) {
-        const existing = results.find((r) => r.id === id);
-        if (!existing) return;
-
-        const calc = new AccountCalculator();
-        const input = new BankAccountInput(
-            existing.startAmount,
-            existing.annualInterestRate,
-            existing.durationMonths,
-            existing.interval,
-            existing.interestType,
-            existing.startDate,
-            existing.cashFlows,
-            existing.isOngoing,
-            existing.dayCount,
-            rateChanges,
-            existing.isVariableRate,
-            existing.currency,
-        );
-        const recalculated = calc.calculate(input);
-        updateResult(id, recalculated);
-    }
-
     return (
         <div className="app-background">
             <div className="app-container">
@@ -259,7 +213,7 @@ function AppContent() {
                     <div className="hero-top">
                         <div className="hero-top__text">
                             <div className="header-accent"/>
-                            <h1>{APP_NAME}</h1>
+                            <h1><Link to={`/${lang}`} className="app-header__logo-link">{APP_NAME}</Link></h1>
                             <p className="app-header__tagline">
                                 {t('app.tagline')}
                             </p>
@@ -318,8 +272,6 @@ function AppContent() {
                             onTogglePortfolio={togglePortfolio}
                             onEdit={handleEdit}
                             onNewAccount={handleNewAccount}
-                            onUpdateCashFlows={handleUpdateCashFlows}
-                            onUpdateRateChanges={handleUpdateRateChanges}
                             onImport={handleImportClick}
                             onLoadDemo={handleLoadDemo}
                         />

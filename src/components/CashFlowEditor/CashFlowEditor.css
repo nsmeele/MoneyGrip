@@ -116,3 +116,11 @@
 .cashflow-item__amount--withdrawal {
   @apply text-danger;
 }
+
+.cashflow-item__badge--auto {
+  @apply text-copper-600 bg-copper-100 dark:text-copper-400 dark:bg-copper-500/15;
+}
+
+.btn-icon-spacer {
+  @apply w-8 h-8 shrink-0;
+}
