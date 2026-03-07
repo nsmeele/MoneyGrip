@@ -42,5 +42,6 @@
 - Focus op waarom ipv wat: leg de reden achter de verandering uit, niet alleen wat er is veranderd
 - Gebruik geen prefixes
 - Gebruik Engelse commit messages
+- Voordat je commit: check of je code voldoet aan de linting regels (`npm run lint`), en dat je build niet faalt (`npm run build`)
 
 

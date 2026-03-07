@@ -3,12 +3,8 @@ import { createRoot } from 'react-dom/client'
 import './i18n'
 import './style.css'
 import App from './App'
-import { ModalProvider } from './context/ModalContext'
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ModalProvider>
-      <App />
-    </ModalProvider>
+    <App />
   </StrictMode>,
 )
