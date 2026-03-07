@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import type { BankAccount } from '../../models/BankAccount';
 import { expandCashFlows } from '../../models/CashFlow';
@@ -7,14 +8,10 @@ import { formatCurrency } from '../../utils/format';
 import { toMonthKey, addMonthsToISO, todayISO, toISO, getNextMonthStart, endOfMonthISO, parseDate } from '../../utils/date';
 import { yearFraction } from '../../utils/dayCount';
 import { getRateForDate } from '../../utils/rateChange';
+import { LOCALE_MAP } from '../../i18n';
+import type { SupportedLanguage } from '../../i18n';
 import PortfolioChart from '../PortfolioChart';
 import './PortfolioSummary.css';
-
-function formatMonthLabel(monthKey: string): string {
-  const [year, month] = monthKey.split('-').map(Number);
-  const d = new Date(year, month - 1, 1);
-  return new Intl.DateTimeFormat('nl-NL', { month: 'long', year: 'numeric' }).format(d);
-}
 
 import { itemStatusForMonth } from '../../utils/portfolioStatus';
 
@@ -40,8 +37,6 @@ function getMonthDays(account: BankAccount, monthKey: string): DayRow[] {
   const endISO = account.endDate ?? addMonthsToISO(account.startDate, account.durationMonths);
   const allCashFlows = expandCashFlows(account.cashFlows, endISO);
 
-  // Build a map: for each day in the month, what balance and rate apply?
-  // Walk through periods and track balance changes from cash flows.
   const dayMap = new Map<string, { balance: number; rate: number }>();
 
   for (let i = 0; i < account.periods.length; i++) {
@@ -51,10 +46,8 @@ function getMonthDays(account: BankAccount, monthKey: string): DayRow[] {
     if (!periodEnd) continue;
     if (periodEnd <= monthStart || periodStart >= monthEnd) continue;
 
-    // Replay balance to period start, then walk day by day
     let balance = period.startBalance;
 
-    // Apply cash flows before the month within this period
     for (const cf of allCashFlows) {
       if (cf.date >= periodStart && cf.date < monthStart) {
         balance = Math.max(0, balance + Math.max(-balance, cf.amount));
@@ -66,7 +59,6 @@ function getMonthDays(account: BankAccount, monthKey: string): DayRow[] {
 
     let day = sliceStart;
     while (day < sliceEnd) {
-      // Apply cash flows on this day
       for (const cf of allCashFlows) {
         if (cf.date === day && day >= periodStart) {
           balance = Math.max(0, balance + Math.max(-balance, cf.amount));
@@ -79,7 +71,6 @@ function getMonthDays(account: BankAccount, monthKey: string): DayRow[] {
     }
   }
 
-  // Now compute daily interest and cumulative
   const rows: DayRow[] = [];
   let cumulative = 0;
 
@@ -106,12 +97,21 @@ interface PortfolioSummaryProps {
 }
 
 export default function PortfolioSummary({ results, portfolioIds, onToggle, onClear }: PortfolioSummaryProps) {
+  const { t, i18n } = useTranslation();
   const items = results.filter((r) => portfolioIds.has(r.id));
   const currentMonthKey = toMonthKey(todayISO());
   const [monthOffset, setMonthOffset] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'accrued' | 'disbursed'>('accrued');
   const [showInactive, setShowInactive] = useState(false);
+
+  const locale = LOCALE_MAP[i18n.language as SupportedLanguage] ?? 'nl-NL';
+
+  function formatMonthLabel(monthKey: string): string {
+    const [year, month] = monthKey.split('-').map(Number);
+    const d = new Date(year, month - 1, 1);
+    return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(d);
+  }
 
   const selectedMonthKey = useMemo(() => {
     if (monthOffset === 0) return currentMonthKey;
@@ -145,9 +145,6 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
 
   const activeForMonth = items.filter((r) => itemStatusForMonth(r, selectedMonthKey) === 'active');
 
-  // Alleen rekeningen meetellen die op de laatste dag van de maand nog lopen.
-  // Voorkomt dubbeltelling wanneer geld van een aflopende rekening diezelfde
-  // maand wordt herbelegd in een nieuwe rekening.
   const lastDayOfMonth = endOfMonthISO(`${selectedMonthKey}-01`);
   const activeAtMonthEnd = activeForMonth.filter((r) => {
     const lastPayout = r.periods[r.periods.length - 1]?.endDate;
@@ -164,17 +161,17 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
   const isCurrentMonth = monthOffset === 0;
 
   return (
-    <section className="portfolio-section" aria-label="Portefeuille">
+    <section className="portfolio-section" aria-label={t('portfolio.title')}>
       <div className="section-header">
         <div className="section-header__title">
           <h2>
-            Portefeuille
+            {t('portfolio.title')}
             <span className="results-count">{items.length}</span>
           </h2>
         </div>
         <div className="section-header__actions">
           <button className="btn-action btn-action--danger" onClick={onClear}>
-            Leegmaken
+            {t('portfolio.clear')}
           </button>
         </div>
       </div>
@@ -184,49 +181,49 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
           className="month-nav__btn"
           onClick={() => setMonthOffset((o) => o - 1)}
           disabled={atStart}
-          aria-label="Vorige maand"
+          aria-label={t('portfolio.prevMonth')}
         >
           <ChevronLeftIcon aria-hidden="true" />
         </button>
         <div className="month-nav__label">
           <span className="portfolio-stat-label">{formatMonthLabel(selectedMonthKey)}</span>
           {isCurrentMonth
-            ? <span className="month-nav__current">nu</span>
-            : <button className="btn-action month-nav__reset" onClick={() => setMonthOffset(0)} aria-label="Terug naar huidige maand">nu</button>
+            ? <span className="month-nav__current">{t('portfolio.now')}</span>
+            : <button className="btn-action month-nav__reset" onClick={() => setMonthOffset(0)} aria-label={t('portfolio.backToCurrent')}>{t('portfolio.now')}</button>
           }
         </div>
         <button
           className="month-nav__btn"
           onClick={() => setMonthOffset((o) => o + 1)}
           disabled={atEnd}
-          aria-label="Volgende maand"
+          aria-label={t('portfolio.nextMonth')}
         >
           <ChevronRightIcon aria-hidden="true" />
         </button>
       </div>
 
-      <nav className="portfolio-tabs" aria-label="Weergave">
+      <nav className="portfolio-tabs" aria-label={t('portfolio.viewLabel')}>
         <button
           className={`portfolio-tabs__tab${viewMode === 'accrued' ? ' portfolio-tabs__tab--active' : ''}`}
           onClick={() => setViewMode('accrued')}
         >
-          Opgebouwd
+          {t('portfolio.accrued')}
         </button>
         <button
           className={`portfolio-tabs__tab${viewMode === 'disbursed' ? ' portfolio-tabs__tab--active' : ''}`}
           onClick={() => setViewMode('disbursed')}
         >
-          Uitbetaald
+          {t('portfolio.disbursed')}
         </button>
       </nav>
 
       <div className="portfolio-stats">
         <div className="portfolio-stat">
-          <div className="portfolio-stat-label">Totaal ingelegd</div>
+          <div className="portfolio-stat-label">{t('portfolio.totalInvested')}</div>
           <div className="portfolio-stat-value">{formatCurrency(totalInvested)}</div>
         </div>
         <div className="portfolio-stat portfolio-stat--highlight">
-          <div className="portfolio-stat-label">{viewMode === 'disbursed' ? 'Uitbetaald' : 'Rente'}</div>
+          <div className="portfolio-stat-label">{viewMode === 'disbursed' ? t('portfolio.disbursed') : t('portfolio.interestLabel')}</div>
           <div className="portfolio-stat-value">{formatCurrency(totalForMonth)}</div>
         </div>
       </div>
@@ -261,8 +258,8 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
                 <span className="portfolio-item-label">
                   {r.label}
                   <span className="badge-interval">{INTERVAL_LABELS[r.interval]}</span>
-                  {status === 'expired' && <span className="badge-expired">Verlopen</span>}
-                  {status === 'upcoming' && <span className="badge-upcoming">Toekomstig</span>}
+                  {status === 'expired' && <span className="badge-expired">{t('portfolio.expired')}</span>}
+                  {status === 'upcoming' && <span className="badge-upcoming">{t('portfolio.upcoming')}</span>}
                 </span>
               </div>
               <div className="portfolio-item-amount">
@@ -277,9 +274,9 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
               </span>
               <button
                 className="btn-icon"
-                title="Verwijder uit portefeuille"
+                title={t('portfolio.removeFromPortfolio')}
                 onClick={(e) => { e.stopPropagation(); onToggle(r.id); }}
-                aria-label="Verwijder uit portefeuille"
+                aria-label={t('portfolio.removeFromPortfolio')}
               >
                 <XMarkIcon aria-hidden="true" />
               </button>
@@ -288,17 +285,17 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
               <div className="portfolio-breakdown">
                 {viewMode === 'disbursed' ? (
                   disbursedAmount > 0
-                    ? <p className="portfolio-breakdown__payout">Uitbetaling: {formatCurrency(disbursedAmount)}</p>
-                    : <p className="portfolio-breakdown__empty">Geen uitbetaling deze maand</p>
+                    ? <p className="portfolio-breakdown__payout">{t('portfolio.payoutAmount', { amount: formatCurrency(disbursedAmount) })}</p>
+                    : <p className="portfolio-breakdown__empty">{t('portfolio.noPayoutThisMonth')}</p>
                 ) : days.length > 0 ? (
                   <table className="portfolio-breakdown__table">
                     <thead>
                       <tr>
-                        <th>Dag</th>
-                        <th>Saldo</th>
-                        <th>Rente %</th>
-                        <th>Dagrente</th>
-                        <th>Opgebouwd</th>
+                        <th>{t('portfolio.day')}</th>
+                        <th>{t('portfolio.balance')}</th>
+                        <th>{t('portfolio.ratePercent')}</th>
+                        <th>{t('portfolio.dailyInterest')}</th>
+                        <th>{t('portfolio.cumulativeInterest')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -314,7 +311,7 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
                     </tbody>
                   </table>
                 ) : (
-                  <p className="portfolio-breakdown__empty">Geen rente in deze maand</p>
+                  <p className="portfolio-breakdown__empty">{t('portfolio.noInterestThisMonth')}</p>
                 )}
               </div>
             )}
@@ -323,7 +320,7 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle, onCl
         })}
         <div className="form-checkbox portfolio-inactive-toggle">
           <input type="checkbox" id="showInactive" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} />
-          <label htmlFor="showInactive">Toon verlopen en toekomstige rekeningen</label>
+          <label htmlFor="showInactive">{t('portfolio.showInactive')}</label>
         </div>
           </>);
         })()}

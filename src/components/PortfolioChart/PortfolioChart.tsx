@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import type { BankAccount } from '../../models/BankAccount';
 import { buildPortfolioChartData } from '../../utils/interest';
@@ -34,6 +35,7 @@ interface PortfolioChartProps {
 }
 
 export default function PortfolioChart({ items, viewMode = 'accrued' }: PortfolioChartProps) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const colors = chartColors[theme];
   const data = useMemo(() => buildPortfolioChartData(items, viewMode), [items, viewMode]);
@@ -44,7 +46,7 @@ export default function PortfolioChart({ items, viewMode = 'accrued' }: Portfoli
   const tickInterval = data.length <= maxLabelCount ? 0 : Math.ceil(data.length / maxLabelCount) - 1;
 
   return (
-    <section className="portfolio-chart" aria-label="Maandelijkse rente-opbrengst grafiek">
+    <section className="portfolio-chart" aria-label={t('portfolio.chartAriaLabel')}>
       <div className="portfolio-chart__container">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>

@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import type { RateChange } from '../../models/RateChange';
-import { formatDate } from '../../utils/format';
+import { formatDate, formatNumber } from '../../utils/format';
 import './RateChangeEditor.css';
 
 interface RateChangeEditorProps {
@@ -10,6 +11,7 @@ interface RateChangeEditorProps {
 }
 
 export default function RateChangeEditor({ rateChanges, onUpdate }: RateChangeEditorProps) {
+  const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [date, setDate] = useState('');
   const [rate, setRate] = useState('');
@@ -43,12 +45,12 @@ export default function RateChangeEditor({ rateChanges, onUpdate }: RateChangeEd
   return (
     <div className="rate-change-editor">
       <div className="rate-change-editor__header">
-        <h3>Rentewijzigingen</h3>
+        <h3>{t('rateChange.title')}</h3>
         <button
           className={`rate-change-editor__add-btn${isAdding ? ' rate-change-editor__add-btn--active' : ''}`}
           onClick={() => { setIsAdding(!isAdding); if (isAdding) resetForm(); }}
         >
-          {isAdding ? 'Annuleren' : <><PlusIcon aria-hidden="true" /> Toevoegen</>}
+          {isAdding ? t('rateChange.cancel') : <><PlusIcon aria-hidden="true" /> {t('rateChange.add')}</>}
         </button>
       </div>
 
@@ -56,7 +58,7 @@ export default function RateChangeEditor({ rateChanges, onUpdate }: RateChangeEd
         <div className="rate-change-editor__form">
           <div className="rate-change-editor__fields">
             <div>
-              <label className="form-label" htmlFor="rc-date">Ingangsdatum</label>
+              <label className="form-label" htmlFor="rc-date">{t('rateChange.effectiveDate')}</label>
               <input
                 id="rc-date"
                 type="date"
@@ -66,7 +68,7 @@ export default function RateChangeEditor({ rateChanges, onUpdate }: RateChangeEd
               />
             </div>
             <div>
-              <label className="form-label" htmlFor="rc-rate">Nieuw rentepercentage</label>
+              <label className="form-label" htmlFor="rc-rate">{t('rateChange.newRate')}</label>
               <div className="form-input-suffix">
                 <input
                   id="rc-rate"
@@ -88,14 +90,14 @@ export default function RateChangeEditor({ rateChanges, onUpdate }: RateChangeEd
               className="rate-change-editor__submit"
               onClick={handleAdd}
             >
-              Toevoegen
+              {t('rateChange.add')}
             </button>
           </div>
         </div>
       )}
 
       {sorted.length === 0 && !isAdding && (
-        <div className="rate-change-editor__empty">Nog geen rentewijzigingen</div>
+        <div className="rate-change-editor__empty">{t('rateChange.empty')}</div>
       )}
 
       {sorted.length > 0 && (
@@ -103,12 +105,12 @@ export default function RateChangeEditor({ rateChanges, onUpdate }: RateChangeEd
           {sorted.map((rc) => (
             <div key={rc.id} className="rate-change-item">
               <span className="rate-change-item__date">{formatDate(rc.date)}</span>
-              <span className="rate-change-item__rate">{rc.annualInterestRate.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}%</span>
+              <span className="rate-change-item__rate">{formatNumber(rc.annualInterestRate, { minimumFractionDigits: 2 })}%</span>
               <button
                 className="btn-icon"
-                title="Verwijderen"
+                title={t('rateChange.delete')}
                 onClick={() => handleRemove(rc.id)}
-                aria-label={`Verwijder rentewijziging ${formatDate(rc.date)}`}
+                aria-label={t('rateChange.deleteRateChange', { date: formatDate(rc.date) })}
               >
                 <XMarkIcon aria-hidden="true" />
               </button>

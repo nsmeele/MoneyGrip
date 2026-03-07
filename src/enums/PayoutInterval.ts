@@ -1,3 +1,5 @@
+import i18n from '../i18n';
+
 export enum PayoutInterval {
   Daily = 'daily',
   Monthly = 'monthly',
@@ -7,14 +9,24 @@ export enum PayoutInterval {
   AtMaturity = 'at_maturity',
 }
 
-export const INTERVAL_LABELS: Record<PayoutInterval, string> = {
-  [PayoutInterval.Daily]: 'Dagelijks',
-  [PayoutInterval.Monthly]: 'Maandelijks',
-  [PayoutInterval.Quarterly]: 'Per kwartaal',
-  [PayoutInterval.SemiAnnually]: 'Per half jaar',
-  [PayoutInterval.Annually]: 'Per jaar',
-  [PayoutInterval.AtMaturity]: 'Einde looptijd',
+const INTERVAL_KEYS: Record<PayoutInterval, string> = {
+  [PayoutInterval.Daily]: 'interval.daily',
+  [PayoutInterval.Monthly]: 'interval.monthly',
+  [PayoutInterval.Quarterly]: 'interval.quarterly',
+  [PayoutInterval.SemiAnnually]: 'interval.semiAnnually',
+  [PayoutInterval.Annually]: 'interval.annually',
+  [PayoutInterval.AtMaturity]: 'interval.atMaturity',
 };
+
+export function getIntervalLabel(interval: PayoutInterval): string {
+  return i18n.t(INTERVAL_KEYS[interval]);
+}
+
+/** @deprecated Use getIntervalLabel() for i18n support */
+export const INTERVAL_LABELS: Record<PayoutInterval, string> = new Proxy(
+  {} as Record<PayoutInterval, string>,
+  { get: (_, key: string) => getIntervalLabel(key as PayoutInterval) },
+);
 
 export function getPeriodsPerYear(interval: PayoutInterval): number {
   switch (interval) {

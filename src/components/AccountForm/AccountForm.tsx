@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import { PayoutInterval, INTERVAL_LABELS } from '../../enums/PayoutInterval';
 import { InterestType, INTEREST_TYPE_LABELS } from '../../enums/InterestType';
@@ -21,6 +22,7 @@ const interestTypes = Object.values(InterestType);
 const dayCountOptions = Object.values(DayCountConvention);
 
 export default function AccountForm({ onResult, editingResult, onCancelEdit }: AccountFormProps) {
+  const { t } = useTranslation();
   const [startAmount, setStartAmount] = useState('10000');
   const [interestRate, setInterestRate] = useState('3.5');
   const [years, setYears] = useState('5');
@@ -62,31 +64,31 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
 
     const amount = parseFloat(startAmount.replace(/\./g, '').replace(',', '.'));
     if (!startAmount.trim() || isNaN(amount)) {
-      next.startAmount = 'Vul een geldig bedrag in';
+      next.startAmount = t('form.errorInvalidAmount');
     } else if (amount <= 0) {
-      next.startAmount = 'Bedrag moet hoger zijn dan 0';
+      next.startAmount = t('form.errorAmountPositive');
     }
 
     const rate = parseFloat(interestRate.replace(',', '.'));
     if (!interestRate.trim() || isNaN(rate)) {
-      next.interestRate = 'Vul een geldig percentage in';
+      next.interestRate = t('form.errorInvalidRate');
     } else if (rate < 0) {
-      next.interestRate = 'Percentage kan niet negatief zijn';
+      next.interestRate = t('form.errorRateNegative');
     }
 
     if (isOngoing) {
       if (!startDate) {
-        next.startDate = 'Vul een startdatum in voor een lopende rekening';
+        next.startDate = t('form.errorStartDateRequired');
       }
     } else if (endDate && !startDate) {
-      next.endDate = 'Vul ook een startdatum in';
+      next.endDate = t('form.errorStartDateMissing');
     } else if (durationFromDates !== null && durationFromDates <= 0) {
-      next.endDate = 'Einddatum moet na de startdatum liggen';
+      next.endDate = t('form.errorEndDateBeforeStart');
     } else if (!hasDurationFromDates) {
       const y = parseInt(years || '0');
       const m = parseInt(months || '0');
       if (isNaN(y) || isNaN(m) || y * 12 + m <= 0) {
-        next.duration = 'Looptijd moet minimaal 1 maand zijn';
+        next.duration = t('form.errorMinDuration');
       }
     }
 
@@ -114,7 +116,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
   return (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label" htmlFor="startAmount">Inleg</label>
+              <label className="form-label" htmlFor="startAmount">{t('form.deposit')}</label>
               <div className="form-input-prefix">
                 <span className="prefix">&euro;</span>
                 <input
@@ -132,7 +134,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
 
             <div className="form-group">
               <label className="form-label" htmlFor="startDate">
-                Startdatum {isOngoing ? '' : '(optioneel)'}
+                {t('form.startDate')} {isOngoing ? '' : t('form.optional')}
               </label>
               <input
                 id="startDate"
@@ -152,16 +154,16 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                   checked={isOngoing}
                   onChange={(e) => setIsOngoing(e.target.checked)}
                 />
-                <label htmlFor="isOngoing">Lopende rekening (geen einddatum)</label>
+                <label htmlFor="isOngoing">{t('form.ongoingAccount')}</label>
               </div>
             </div>
 
             {!isOngoing && (
               <div className="form-group">
                 <label className="form-label" htmlFor="endDate">
-                  Einddatum (optioneel)
+                  {t('form.endDateOptional')}
                   {hasDurationFromDates && (
-                    <span className="form-hint">Looptijd wordt automatisch berekend</span>
+                    <span className="form-hint">{t('form.durationAuto')}</span>
                   )}
                 </label>
                 <input
@@ -177,7 +179,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
 
             {!isOngoing && (
               <div className="form-group">
-                <label className="form-label">Looptijd</label>
+                <label className="form-label">{t('form.duration')}</label>
                 <div className="form-row">
                   <div className="form-input-suffix">
                     <input
@@ -191,7 +193,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                       readOnly={hasDurationFromDates}
                       tabIndex={hasDurationFromDates ? -1 : undefined}
                     />
-                    <span className="suffix">jr</span>
+                    <span className="suffix">{t('form.yearsSuffix')}</span>
                   </div>
                   <div className="form-input-suffix">
                     <input
@@ -205,7 +207,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                       readOnly={hasDurationFromDates}
                       tabIndex={hasDurationFromDates ? -1 : undefined}
                     />
-                    <span className="suffix">mnd</span>
+                    <span className="suffix">{t('form.monthsSuffix')}</span>
                   </div>
                 </div>
                 {errors.duration && <span className="form-error">{errors.duration}</span>}
@@ -213,7 +215,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
             )}
 
             <div className="form-group">
-              <label className="form-label" htmlFor="interestRate">Rente per jaar</label>
+              <label className="form-label" htmlFor="interestRate">{t('form.annualRate')}</label>
               <div className="form-input-suffix">
                 <input
                   id="interestRate"
@@ -238,14 +240,14 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                   onChange={(e) => setIsVariableRate(e.target.checked)}
                 />
                 <label htmlFor="isVariableRate">
-                  Variabele rente
-                  <span className="form-hint">Rentewijzigingen kun je toevoegen in het overzicht.</span>
+                  {t('form.variableRate')}
+                  <span className="form-hint">{t('form.variableRateHint')}</span>
                 </label>
               </div>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Rentetype</label>
+              <label className="form-label">{t('form.interestType')}</label>
               <div className="interval-grid">
                 {interestTypes.map((rt) => (
                   <div key={rt} className="interval-option">
@@ -266,7 +268,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
             </div>
 
             <div className="form-group">
-              <label className="form-label">Uitbetaling</label>
+              <label className="form-label">{t('form.payoutLabel')}</label>
               <div className="interval-grid">
                 {intervals.map((iv) => (
                   <div
@@ -291,8 +293,8 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
 
             <div className="form-group">
               <label className="form-label">
-                Dagtellingconventie
-                <span className="form-hint">Voor een nauwkeurige berekening: kies de conventie die je bank hanteert. Dit staat in het productinformatieblad (PIB) onder 'Renteberekening'.</span>
+                {t('form.dayCountConvention')}
+                <span className="form-hint">{t('form.dayCountHint')}</span>
               </label>
               <div className="interval-grid">
                 {dayCountOptions.map((dc) => (
@@ -307,7 +309,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                     />
                     <label htmlFor={`daycount-${dc}`}>
                       {DAY_COUNT_LABELS[dc]}
-                      <span className="popover-anchor" tabIndex={0} role="button" aria-label={`Info over ${DAY_COUNT_LABELS[dc]}`} onClick={(e) => e.preventDefault()}>
+                      <span className="popover-anchor" tabIndex={0} role="button" aria-label={t('accounts.infoAbout', { label: DAY_COUNT_LABELS[dc] })} onClick={(e) => e.preventDefault()}>
                         <InformationCircleIcon className="popover-anchor__icon" aria-hidden="true" />
                         <span className="popover-anchor__content">{DAY_COUNT_DESCRIPTIONS[dc]}</span>
                       </span>
@@ -318,11 +320,11 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
             </div>
 
             <button type="submit" className="btn-primary">
-              {editingResult ? 'Bijwerken' : 'Bereken'}
+              {editingResult ? t('form.update') : t('form.calculate')}
             </button>
             {onCancelEdit && (
               <button type="button" className="btn-secondary" onClick={onCancelEdit}>
-                Annuleren
+                {t('form.cancel')}
               </button>
             )}
           </form>

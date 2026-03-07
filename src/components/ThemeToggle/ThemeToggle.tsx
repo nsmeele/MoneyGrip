@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import './ThemeToggle.css';
 
 export default function ThemeToggle() {
+  const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
 
@@ -9,8 +11,8 @@ export default function ThemeToggle() {
     <button
       className="theme-toggle"
       onClick={toggleTheme}
-      aria-label={isDark ? 'Schakel naar licht thema' : 'Schakel naar donker thema'}
-      title={isDark ? 'Licht thema' : 'Donker thema'}
+      aria-label={isDark ? t('theme.switchToLight') : t('theme.switchToDark')}
+      title={isDark ? t('theme.light') : t('theme.dark')}
     >
       <svg className="theme-toggle__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         {isDark ? (

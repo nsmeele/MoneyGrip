@@ -1,5 +1,6 @@
 import { Fragment, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { InformationCircleIcon, PlusIcon, ChevronDownIcon, PencilIcon, XMarkIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline';
@@ -30,6 +31,7 @@ interface BankAccountsOverviewProps {
 }
 
 function ColumnInfo({ label, info }: { label: string; info: string }) {
+  const { t } = useTranslation();
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
   const show = useCallback((e: React.MouseEvent | React.FocusEvent) => {
@@ -46,7 +48,7 @@ function ColumnInfo({ label, info }: { label: string; info: string }) {
         className="popover-anchor popover-anchor--th"
         tabIndex={0}
         role="button"
-        aria-label={`Info over ${label}`}
+        aria-label={t('accounts.infoAbout', { label })}
         onMouseEnter={show}
         onMouseLeave={hide}
         onFocus={show}
@@ -68,6 +70,7 @@ function ColumnInfo({ label, info }: { label: string; info: string }) {
 }
 
 export default function BankAccountsOverview({ results, onRemove, onClear, portfolioIds, onTogglePortfolio, onEdit, onNewAccount, onUpdateCashFlows, onUpdateRateChanges, onExport, onImportFile, importError }: BankAccountsOverviewProps) {
+  const { t } = useTranslation();
   const [openId, setOpenId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { openModal } = useModal();
@@ -75,9 +78,9 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
   function handleRemove(id: string) {
     openModal({
       type: 'confirm',
-      title: 'Rekening verwijderen',
-      message: 'Weet je zeker dat je deze rekening wilt verwijderen?',
-      confirmLabel: 'Verwijderen',
+      title: t('accounts.confirmDeleteTitle'),
+      message: t('accounts.confirmDeleteMessage'),
+      confirmLabel: t('accounts.confirmDeleteButton'),
       onConfirm: () => onRemove(id),
     });
   }
@@ -85,9 +88,9 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
   function handleClear() {
     openModal({
       type: 'confirm',
-      title: 'Alles wissen',
-      message: 'Weet je zeker dat je alle rekeningen wilt verwijderen?',
-      confirmLabel: 'Alles wissen',
+      title: t('accounts.confirmClearTitle'),
+      message: t('accounts.confirmClearMessage'),
+      confirmLabel: t('accounts.clearAll'),
       onConfirm: onClear,
     });
   }
@@ -102,16 +105,16 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
 
   if (results.length === 0) {
     return (
-      <section className="empty-state" aria-label="Nog geen rekeningen">
+      <section className="empty-state" aria-label={t('accounts.ariaLabelEmpty')}>
         <PlusIcon className="empty-state__icon" aria-hidden="true" />
-        <h3>Nog geen rekeningen</h3>
-        <p>Voeg je eerste rekening toe of importeer een eerder opgeslagen bestand.</p>
+        <h3>{t('accounts.emptyTitle')}</h3>
+        <p>{t('accounts.emptyDescription')}</p>
         <div className="empty-state__actions">
           <button className="btn-primary empty-state__btn" onClick={onNewAccount}>
-            Nieuwe rekening
+            {t('accounts.newAccount')}
           </button>
           <button className="btn-secondary empty-state__btn" onClick={() => fileInputRef.current?.click()}>
-            Importeren
+            {t('accounts.import')}
           </button>
           <input
             ref={fileInputRef}
@@ -139,24 +142,24 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
 
 
   return (
-    <section className="results-section" aria-label="Rekeningen">
+    <section className="results-section" aria-label={t('accounts.sectionLabel')}>
       <div className="section-header">
         <div className="section-header__title">
           <h2>
-            Rekeningen
+            {t('accounts.sectionLabel')}
             <span className="results-count">{results.length}</span>
           </h2>
         </div>
         <div className="section-header__actions">
           <button className="btn-action" onClick={onNewAccount}>
             <PlusIcon aria-hidden="true" />
-            Nieuwe rekening
+            {t('accounts.newAccount')}
           </button>
-          <button className="btn-action btn-action--muted" onClick={onExport} aria-label="Exporteren">
-            Exporteren
+          <button className="btn-action btn-action--muted" onClick={onExport} aria-label={t('accounts.export')}>
+            {t('accounts.export')}
           </button>
-          <button className="btn-action btn-action--muted" onClick={() => fileInputRef.current?.click()} aria-label="Importeren">
-            Importeren
+          <button className="btn-action btn-action--muted" onClick={() => fileInputRef.current?.click()} aria-label={t('accounts.import')}>
+            {t('accounts.import')}
           </button>
           <input
             ref={fileInputRef}
@@ -168,7 +171,7 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
             tabIndex={-1}
           />
           <button className="btn-action btn-action--danger" onClick={handleClear}>
-            Alles wissen
+            {t('accounts.clearAll')}
           </button>
         </div>
       </div>
@@ -181,10 +184,10 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
           <thead>
             <tr>
               <th></th>
-              <th><ColumnInfo label="Saldo" info="Je huidige saldo: het startbedrag plus alle stortingen en min alle opnames. Bij rente op rente wordt uitbetaalde rente meegenomen." /></th>
-              <th>Rente</th>
-              <th>Einddatum</th>
-              <th>Uitkering</th>
+              <th><ColumnInfo label={t('accounts.balance')} info={t('accounts.balanceInfo')} /></th>
+              <th>{t('accounts.interest')}</th>
+              <th>{t('accounts.endDate')}</th>
+              <th>{t('accounts.payout')}</th>
               <th></th>
             </tr>
           </thead>
@@ -211,12 +214,12 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                     <td>{r.annualInterestRate}%</td>
                     <td>
                       {r.isOngoing
-                        ? <span className="comparison-badge comparison-badge--ongoing">Lopend</span>
+                        ? <span className="comparison-badge comparison-badge--ongoing">{t('accounts.ongoing')}</span>
                         : <>
                             {r.endDate && formatDate(r.endDate)}{' '}
                             <span className="comparison-badge">{formatDurationShort(r.durationMonths)}</span>
                             {r.totalInterest > 0 && Math.round((r.disbursedToDate + r.accruedInterest) / r.totalInterest * 100) >= 100 && (
-                              <span className="comparison-badge comparison-badge--complete">Voltooid</span>
+                              <span className="comparison-badge comparison-badge--complete">{t('accounts.completed')}</span>
                             )}
                           </>
                       }
@@ -228,35 +231,35 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                       <div className="comparison-actions">
                       <button
                         className="btn-icon"
-                        title="Bewerken"
+                        title={t('accounts.edit')}
                         onClick={() => onEdit(r)}
-                        aria-label="Bewerken"
+                        aria-label={t('accounts.edit')}
                       >
                         <PencilIcon aria-hidden="true" />
                       </button>
                       <button
                         className={`btn-portfolio${portfolioIds.has(r.id) ? ' btn-portfolio--active' : ''}`}
-                        title={portfolioIds.has(r.id) ? 'Verwijder uit portefeuille' : 'Toevoegen aan portefeuille'}
+                        title={portfolioIds.has(r.id) ? t('accounts.removeFromPortfolio') : t('accounts.addToPortfolio')}
                         onClick={() => onTogglePortfolio(r.id)}
-                        aria-label={portfolioIds.has(r.id) ? 'Verwijder uit portefeuille' : 'Toevoegen aan portefeuille'}
+                        aria-label={portfolioIds.has(r.id) ? t('accounts.removeFromPortfolio') : t('accounts.addToPortfolio')}
                       >
                         {portfolioIds.has(r.id) ? <StarIconSolid aria-hidden="true" /> : <StarIconOutline aria-hidden="true" />}
                       </button>
                       {import.meta.env.DEV && (
                         <button
                           className="btn-icon"
-                          title="Kopieer data"
+                          title={t('accounts.copyData')}
                           onClick={() => navigator.clipboard.writeText(JSON.stringify(r, null, 2))}
-                          aria-label="Kopieer data"
+                          aria-label={t('accounts.copyData')}
                         >
                           <ClipboardDocumentIcon aria-hidden="true" />
                         </button>
                       )}
                       <button
                         className="btn-icon"
-                        title="Verwijderen"
+                        title={t('accounts.delete')}
                         onClick={() => handleRemove(r.id)}
-                        aria-label="Verwijderen"
+                        aria-label={t('accounts.delete')}
                       >
                         <XMarkIcon aria-hidden="true" />
                       </button>
@@ -270,17 +273,17 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                           <div className="period-detail-status">
                             {r.disbursedToDate > 0 && (
                               <span className="period-detail-status__item">
-                                <strong><ColumnInfo label="Uitbetaald" info="Rente die al daadwerkelijk is uitbetaald op de uitbetalingsdatums tot en met vandaag." /></strong> {formatCurrency(r.disbursedToDate)}
+                                <strong><ColumnInfo label={t('accounts.disbursed')} info={t('accounts.disbursedInfo')} /></strong> {formatCurrency(r.disbursedToDate)}
                               </span>
                             )}
                             {r.accruedInterest > 0 && (
                               <span className="period-detail-status__item">
-                                <strong><ColumnInfo label="Opgebouwd" info="Rente die is opgebouwd sinds de laatste uitbetaling, maar nog niet is uitbetaald. Dit bedrag groeit dagelijks." /></strong> {formatCurrency(r.accruedInterest)}
+                                <strong><ColumnInfo label={t('accounts.accrued')} info={t('accounts.accruedInfo')} /></strong> {formatCurrency(r.accruedInterest)}
                               </span>
                             )}
                             {r.nextPayoutDate && (
                               <span className="period-detail-status__item">
-                                <strong>Volgende uitbetaling:</strong> {formatDate(r.nextPayoutDate)}
+                                <strong>{t('accounts.nextPayout')}</strong> {formatDate(r.nextPayoutDate)}
                               </span>
                             )}
                           </div>
@@ -290,12 +293,12 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                             <table className="period-table">
                               <thead>
                                 <tr>
-                                  <th>Periode</th>
-                                  <th>Beginsaldo</th>
-                                  {r.totalDeposited !== 0 && <th>Gestort</th>}
-                                  <th>Rente</th>
-                                  <th>Uitbetaald</th>
-                                  <th>Eindsaldo</th>
+                                  <th>{t('accounts.period')}</th>
+                                  <th>{t('accounts.startBalance')}</th>
+                                  {r.totalDeposited !== 0 && <th>{t('accounts.deposited')}</th>}
+                                  <th>{t('accounts.interest')}</th>
+                                  <th>{t('accounts.disbursed')}</th>
+                                  <th>{t('accounts.endBalance')}</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -327,20 +330,20 @@ export default function BankAccountsOverview({ results, onRemove, onClear, portf
                           <aside className="period-summary">
                             <dl className="period-summary__list">
                               <div className="period-summary__item">
-                                <dt>Inleg</dt>
+                                <dt>{t('accounts.deposit')}</dt>
                                 <dd>{formatCurrency(r.currentBalance)}</dd>
                               </div>
                               <div className="period-summary__item">
-                                <dt>Totale rente</dt>
+                                <dt>{t('accounts.totalInterest')}</dt>
                                 <dd className="period-summary__highlight">{formatCurrency(r.totalInterest)}</dd>
                               </div>
                               <div className="period-summary__item">
-                                <dt>Eindbedrag</dt>
+                                <dt>{t('accounts.endAmount')}</dt>
                                 <dd>{formatCurrency(r.endAmount)}</dd>
                               </div>
                               {r.interestThisMonth > 0 && (
                                 <div className="period-summary__item">
-                                  <dt>Rente deze maand</dt>
+                                  <dt>{t('accounts.interestThisMonth')}</dt>
                                   <dd>{formatCurrency(r.interestThisMonth)}</dd>
                                 </div>
                               )}

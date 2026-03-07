@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import AccountForm from '../AccountForm';
@@ -12,6 +13,7 @@ interface AccountFormModalProps {
 }
 
 export default function AccountFormModal({ editingResult, onResult, onClose }: AccountFormModalProps) {
+  const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
   useFocusTrap(panelRef, onClose);
 
@@ -27,9 +29,9 @@ export default function AccountFormModal({ editingResult, onResult, onClose }: A
       >
         <div className="modal__header">
           <h2 id="account-form-modal-title">
-            {editingResult ? 'Rekening aanpassen' : 'Nieuwe rekening'}
+            {editingResult ? t('form.editTitle') : t('form.newTitle')}
           </h2>
-          <button className="modal__close" onClick={onClose} aria-label="Sluiten">
+          <button className="modal__close" onClick={onClose} aria-label={t('modal.close')}>
             <XMarkIcon aria-hidden="true" />
           </button>
         </div>

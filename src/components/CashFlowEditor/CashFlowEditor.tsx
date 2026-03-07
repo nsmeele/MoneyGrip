@@ -1,15 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import type { CashFlow } from '../../models/CashFlow';
 import { formatCurrency, formatDate } from '../../utils/format';
 import './CashFlowEditor.css';
-
-const RECURRING_OPTIONS = [
-  { value: 1, label: 'Maandelijks' },
-  { value: 3, label: 'Per kwartaal' },
-  { value: 6, label: 'Per half jaar' },
-  { value: 12, label: 'Per jaar' },
-];
 
 interface CashFlowEditorProps {
   cashFlows: CashFlow[];
@@ -17,6 +11,7 @@ interface CashFlowEditorProps {
 }
 
 export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorProps) {
+  const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [isWithdrawal, setIsWithdrawal] = useState(false);
   const [date, setDate] = useState('');
@@ -24,6 +19,13 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
   const [description, setDescription] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [intervalMonths, setIntervalMonths] = useState(1);
+
+  const recurringOptions = [
+    { value: 1, label: t('cashflow.recurringMonthly') },
+    { value: 3, label: t('cashflow.recurringQuarterly') },
+    { value: 6, label: t('cashflow.recurringSemiAnnually') },
+    { value: 12, label: t('cashflow.recurringAnnually') },
+  ];
 
   function resetForm() {
     setDate('');
@@ -42,7 +44,7 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
       id: crypto.randomUUID(),
       date,
       amount: isWithdrawal ? -parsedAmount : parsedAmount,
-      description: description || (isWithdrawal ? 'Opname' : 'Storting'),
+      description: description || (isWithdrawal ? t('cashflow.withdrawalType') : t('cashflow.depositType')),
       ...(isRecurring ? { recurring: { intervalMonths } } : {}),
     };
 
@@ -60,12 +62,12 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
   return (
     <div className="cashflow-editor">
       <div className="cashflow-editor__header">
-        <h3>Transacties</h3>
+        <h3>{t('cashflow.title')}</h3>
         <button
           className={`cashflow-editor__add-btn${isAdding ? ' cashflow-editor__add-btn--active' : ''}`}
           onClick={() => { setIsAdding(!isAdding); if (isAdding) resetForm(); }}
         >
-          {isAdding ? 'Annuleren' : <><PlusIcon aria-hidden="true" /> Toevoegen</>}
+          {isAdding ? t('cashflow.cancel') : <><PlusIcon aria-hidden="true" /> {t('cashflow.add')}</>}
         </button>
       </div>
 
@@ -77,20 +79,20 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
               className={`cashflow-type${!isWithdrawal ? ' cashflow-type--active cashflow-type--deposit' : ''}`}
               onClick={() => setIsWithdrawal(false)}
             >
-              Storting
+              {t('cashflow.depositType')}
             </button>
             <button
               type="button"
               className={`cashflow-type${isWithdrawal ? ' cashflow-type--active cashflow-type--withdrawal' : ''}`}
               onClick={() => setIsWithdrawal(true)}
             >
-              Opname
+              {t('cashflow.withdrawalType')}
             </button>
           </div>
 
           <div className="cashflow-editor__fields">
             <div>
-              <label className="form-label" htmlFor="cf-date">Datum</label>
+              <label className="form-label" htmlFor="cf-date">{t('cashflow.date')}</label>
               <input
                 id="cf-date"
                 type="date"
@@ -100,7 +102,7 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
               />
             </div>
             <div>
-              <label className="form-label" htmlFor="cf-amount">Bedrag</label>
+              <label className="form-label" htmlFor="cf-amount">{t('cashflow.amount')}</label>
               <div className="form-input-prefix">
                 <span className="prefix">&euro;</span>
                 <input
@@ -115,14 +117,14 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
               </div>
             </div>
             <div>
-              <label className="form-label" htmlFor="cf-desc">Omschrijving</label>
+              <label className="form-label" htmlFor="cf-desc">{t('cashflow.description')}</label>
               <input
                 id="cf-desc"
                 type="text"
                 className="form-input"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder={isWithdrawal ? 'Opname' : 'Storting'}
+                placeholder={isWithdrawal ? t('cashflow.withdrawalType') : t('cashflow.depositType')}
               />
             </div>
           </div>
@@ -134,7 +136,7 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
                 checked={isRecurring}
                 onChange={(e) => setIsRecurring(e.target.checked)}
               />
-              Terugkerend
+              {t('cashflow.recurring')}
             </label>
             {isRecurring && (
               <select
@@ -142,7 +144,7 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
                 value={intervalMonths}
                 onChange={(e) => setIntervalMonths(Number(e.target.value))}
               >
-                {RECURRING_OPTIONS.map((opt) => (
+                {recurringOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
@@ -155,14 +157,14 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
               className="cashflow-editor__submit"
               onClick={handleAdd}
             >
-              Toevoegen
+              {t('cashflow.add')}
             </button>
           </div>
         </div>
       )}
 
       {sorted.length === 0 && !isAdding && (
-        <div className="cashflow-editor__empty">Nog geen transacties</div>
+        <div className="cashflow-editor__empty">{t('cashflow.empty')}</div>
       )}
 
       {sorted.length > 0 && (
@@ -174,7 +176,7 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
                 {cf.description}
                 {cf.recurring && (
                   <span className="cashflow-item__badge">
-                    {RECURRING_OPTIONS.find((o) => o.value === cf.recurring!.intervalMonths)?.label ?? 'Terugkerend'}
+                    {recurringOptions.find((o) => o.value === cf.recurring!.intervalMonths)?.label ?? t('cashflow.recurring')}
                   </span>
                 )}
               </span>
@@ -183,9 +185,9 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
               </span>
               <button
                 className="btn-icon"
-                title="Verwijderen"
+                title={t('cashflow.delete')}
                 onClick={() => handleRemove(cf.id)}
-                aria-label={`Verwijder transactie ${cf.description}`}
+                aria-label={t('cashflow.deleteTransaction', { description: cf.description })}
               >
                 <XMarkIcon aria-hidden="true" />
               </button>

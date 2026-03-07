@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import BankAccountsOverview from './components/BankAccountsOverview';
 import PortfolioSummary from './components/PortfolioSummary';
 import ThemeToggle from './components/ThemeToggle/ThemeToggle';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import { useResultStorage } from './hooks/useResultStorage';
 import { usePortfolio } from './hooks/usePortfolio';
 import { useDataTransfer } from './hooks/useDataTransfer';
@@ -16,6 +18,7 @@ import type { CashFlow } from './models/CashFlow';
 import type { RateChange } from './models/RateChange';
 
 export default function App() {
+  const { t } = useTranslation();
   const themeCtx = useThemeProvider();
   const { results, addResult, updateResult, removeResult, clearResults, replaceResults, mergeResults } = useResultStorage();
   const { portfolioIds, togglePortfolio, clearPortfolio, replacePortfolio, mergePortfolio } = usePortfolio();
@@ -118,7 +121,7 @@ export default function App() {
               <div className="header-accent" />
               <h1>MoneyGrip</h1>
               <p className="app-header__tagline">
-                Baas over je rente.
+                {t('app.tagline')}
               </p>
             </div>
             <div className="hero-top__actions">
@@ -126,7 +129,7 @@ export default function App() {
                 className="btn-start"
                 onClick={handleNewAccount}
               >
-                Nieuwe rekening
+                {t('app.newAccount')}
               </button>
               <button
                 className="btn-guide-link"
@@ -134,74 +137,40 @@ export default function App() {
                 aria-expanded={showGuide}
                 aria-controls="usage-guide"
               >
-                {showGuide ? 'Verberg uitleg' : 'Hoe werkt het?'}
+                {showGuide ? t('app.hideGuide') : t('app.showGuide')}
                 <span className={`btn-guide-link__chevron${showGuide ? ' btn-guide-link__chevron--open' : ''}`} aria-hidden="true">&#8250;</span>
               </button>
               <ThemeToggle />
+              <LanguageSwitcher />
               {hasData && <ClearDataButton onClear={clearAllData} />}
             </div>
           </div>
 
           {showGuide && (
-            <section id="usage-guide" className="usage-guide" aria-label="Uitleg en features">
+            <section id="usage-guide" className="usage-guide" aria-label={t('guide.ariaLabel')}>
               <div className="usage-guide__layout">
                 <div className="usage-guide__features">
-                  <h2 className="usage-guide__heading">Wat kan MoneyGrip?</h2>
+                  <h2 className="usage-guide__heading">{t('guide.featuresHeading')}</h2>
                   <ul className="feature-list">
-                    <li className="feature-list__item">
-                      <span className="feature-list__label">Enkelvoudige &amp; samengestelde rente</span>
-                    </li>
-                    <li className="feature-list__item">
-                      <span className="feature-list__label">Variabele rente met rentewijzigingen</span>
-                    </li>
-                    <li className="feature-list__item">
-                      <span className="feature-list__label">Stortingen &amp; opnames (eenmalig of terugkerend)</span>
-                    </li>
-                    <li className="feature-list__item">
-                      <span className="feature-list__label">4 day count methodes (NOM/12, ACT/365, ACT/ACT, 30/360)</span>
-                    </li>
-                    <li className="feature-list__item">
-                      <span className="feature-list__label">6 uitbetalingsintervallen (dagelijks t/m einde looptijd)</span>
-                    </li>
-                    <li className="feature-list__item">
-                      <span className="feature-list__label">Portefeuille-overzicht met maandelijkse rente-tracking</span>
-                    </li>
-                    <li className="feature-list__item">
-                      <span className="feature-list__label">Import &amp; export van berekeningen</span>
-                    </li>
+                    {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                      <li key={n} className="feature-list__item">
+                        <span className="feature-list__label">{t(`guide.feature${n}`)}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
                 <div className="usage-guide__steps-wrapper">
-                  <h2 className="usage-guide__heading">Hoe gebruik je het?</h2>
+                  <h2 className="usage-guide__heading">{t('guide.stepsHeading')}</h2>
                   <ol className="usage-guide__steps">
-                    <li className="usage-guide__step">
-                      <span className="usage-guide__number">1</span>
-                      <div>
-                        <strong>Rekeninggegevens invoeren</strong>
-                        <span className="usage-guide__detail">Inleg, rente, looptijd, startdatum, rentetype en berekeningsmethode.</span>
-                      </div>
-                    </li>
-                    <li className="usage-guide__step">
-                      <span className="usage-guide__number">2</span>
-                      <div>
-                        <strong>Transacties &amp; rentewijzigingen toevoegen</strong>
-                        <span className="usage-guide__detail">Optioneel: bij- en afschrijvingen plannen en rente aanpassen over de looptijd.</span>
-                      </div>
-                    </li>
-                    <li className="usage-guide__step">
-                      <span className="usage-guide__number">3</span>
-                      <div>
-                        <strong>Resultaat per periode bekijken</strong>
-                        <span className="usage-guide__detail">Opgebouwde rente, saldo en uitbetalingen per periode — inclusief de stand van vandaag.</span>
-                      </div>
-                    </li>
-                    <li className="usage-guide__step">
-                      <span className="usage-guide__number">4</span>
-                      <div>
-                        <strong>Vergelijken in je portefeuille</strong>
-                        <span className="usage-guide__detail">Meerdere rekeningen combineren en totale rente-opbrengsten vergelijken.</span>
-                      </div>
-                    </li>
+                    {[1, 2, 3, 4].map((n) => (
+                      <li key={n} className="usage-guide__step">
+                        <span className="usage-guide__number">{n}</span>
+                        <div>
+                          <strong>{t(`guide.step${n}Title`)}</strong>
+                          <span className="usage-guide__detail">{t(`guide.step${n}Detail`)}</span>
+                        </div>
+                      </li>
+                    ))}
                   </ol>
                 </div>
               </div>
@@ -236,10 +205,10 @@ export default function App() {
 
         <footer className="app-disclaimer">
           <p>
-            <strong>Privacy:</strong> MoneyGrip werkt volledig in je browser. Je gegevens worden lokaal opgeslagen op je apparaat en worden nooit naar een server verstuurd. Er worden geen cookies geplaatst en er vindt geen tracking plaats. Let op: geëxporteerde bestanden bevatten al je rekeninggegevens — bewaar deze op een veilige plek en deel ze niet onbedoeld.
+            <strong>{t('footer.privacyLabel')}</strong> {t('footer.privacyText')}
           </p>
           <p>
-            <strong>Disclaimer:</strong> MoneyGrip is een hulpmiddel voor indicatieve renteberekeningen. Aan de weergegeven bedragen, berekeningen en overzichten kunnen geen rechten worden ontleend. Raadpleeg altijd je bank of financieel adviseur voor definitieve cijfers. De maker van deze applicatie is niet aansprakelijk voor eventuele onjuistheden of beslissingen op basis van deze berekeningen.
+            <strong>{t('footer.disclaimerLabel')}</strong> {t('footer.disclaimerText')}
           </p>
         </footer>
       </div>
