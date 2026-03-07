@@ -5,7 +5,7 @@
 }
 
 .language-switcher__btn {
-  @apply px-2 py-1 text-xs font-medium cursor-pointer border-0 text-navy-500 bg-navy-100 transition-all duration-150 dark:text-navy-300 dark:bg-navy-800;
+  @apply px-2 py-1 text-xs font-medium cursor-pointer border-0 no-underline text-navy-500 bg-navy-100 transition-all duration-150 dark:text-navy-300 dark:bg-navy-800;
 }
 
 .language-switcher__btn:hover {

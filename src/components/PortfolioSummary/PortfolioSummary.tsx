@@ -5,7 +5,7 @@ import type { BankAccount } from '../../models/BankAccount';
 import { expandCashFlows } from '../../models/CashFlow';
 import { getIntervalLabel } from '../../enums/PayoutInterval';
 import { formatCurrency, formatAccountLabel, formatRate } from '../../utils/format';
-import { useCurrency } from '../../hooks/useCurrency';
+import { useLocale } from '../../context/useLocale';
 import type { Currency } from '../../enums/Currency';
 import { toMonthKey, addMonthsToISO, todayISO, toISO, getNextMonthStart, endOfMonthISO, parseDate } from '../../utils/date';
 import { yearFraction } from '../../utils/dayCount';
@@ -99,7 +99,7 @@ interface PortfolioSummaryProps {
 
 export default function PortfolioSummary({ results, portfolioIds, onToggle }: PortfolioSummaryProps) {
   const { t, i18n } = useTranslation();
-  const { currency: globalCurrency } = useCurrency();
+  const { currency: globalCurrency } = useLocale();
   const items = results.filter((r) => portfolioIds.has(r.id));
   const hasMixedCurrencies = new Set(items.map((r) => r.currency ?? globalCurrency)).size > 1;
   const currentMonthKey = toMonthKey(todayISO());

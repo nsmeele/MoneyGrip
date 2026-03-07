@@ -1,4 +1,8 @@
 {
+  "meta": {
+    "title": "Interest Calculator - Calculate Your Savings Interest",
+    "description": "Easily calculate your savings interest with our free interest calculator. Compare accounts, view your portfolio and plan your financial future."
+  },
   "app": {
     "tagline": "Master your interest.",
     "newAccount": "New account",

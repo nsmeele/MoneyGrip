@@ -1,4 +1,8 @@
 {
+  "meta": {
+    "title": "Rente Calculator - Bereken je spaarrente",
+    "description": "Bereken eenvoudig je spaarrente met onze gratis rente calculator. Vergelijk rekeningen, bekijk je portfolio en plan je financiele toekomst."
+  },
   "app": {
     "tagline": "Baas over je rente.",
     "newAccount": "Nieuwe rekening",

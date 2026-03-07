@@ -1,29 +1,24 @@
-import { useTranslation } from 'react-i18next';
-import { SUPPORTED_LANGUAGES } from '../../i18n';
+import { Link } from 'react-router';
+import { SUPPORTED_LANGUAGES } from '../../i18n/languages';
+import { useLocale } from '../../context/useLocale';
 import './LanguageSwitcher.css';
 
 export default function LanguageSwitcher() {
-  const { i18n } = useTranslation();
-
-  function handleChange(lng: string) {
-    i18n.changeLanguage(lng);
-  }
-
-  const resolvedLng = i18n.resolvedLanguage ?? i18n.language;
+  const { language } = useLocale();
 
   return (
-    <div className="language-switcher" role="radiogroup" aria-label="Language">
+    <nav className="language-switcher" aria-label="Language">
       {SUPPORTED_LANGUAGES.map(({ code, label }) => (
-        <button
+        <Link
           key={code}
-          className={`language-switcher__btn${resolvedLng === code ? ' language-switcher__btn--active' : ''}`}
-          onClick={() => handleChange(code)}
-          aria-pressed={resolvedLng === code}
+          to={`/${code}`}
+          className={`language-switcher__btn${language === code ? ' language-switcher__btn--active' : ''}`}
+          aria-current={language === code ? 'page' : undefined}
           lang={code}
         >
           {label}
-        </button>
+        </Link>
       ))}
-    </div>
+    </nav>
   );
 }

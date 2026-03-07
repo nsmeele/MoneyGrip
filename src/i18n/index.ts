@@ -1,24 +1,13 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 
 import nl from './nl.json';
 import en from './en.json';
 
-export const SUPPORTED_LANGUAGES = [
-  { code: 'nl', label: 'NL' },
-  { code: 'en', label: 'EN' },
-] as const;
-
-export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]['code'];
-
-export const LOCALE_MAP: Record<SupportedLanguage, string> = {
-  nl: 'nl-NL',
-  en: 'en-US',
-};
+export { SUPPORTED_LANGUAGES, LOCALE_MAP } from './languages';
+export type { SupportedLanguage } from './languages';
 
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
@@ -28,11 +17,6 @@ i18n
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
-    },
-    detection: {
-      order: ['localStorage', 'navigator'],
-      lookupLocalStorage: 'language',
-      caches: ['localStorage'],
     },
   });
 

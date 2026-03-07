@@ -9,7 +9,7 @@ import {usePortfolio} from './hooks/usePortfolio';
 import {useDataTransfer} from './hooks/useDataTransfer';
 import {useModal} from './context/useModal';
 import {useThemeProvider, ThemeContext} from './hooks/useTheme';
-import {useCurrencyProvider, CurrencyContext} from './hooks/useCurrency';
+import {LocaleProvider} from './context/LocaleContext';
 import CurrencySelector from './components/CurrencySelector';
 import {useLastTabClear} from './hooks/useLastTabClear';
 import ClearDataButton from './components/ClearDataButton';
@@ -28,23 +28,24 @@ import type {RateChange} from './models/RateChange';
 import {demoData} from './transfer/demoData';
 import {ModalProvider} from './context/ModalContext';
 import {APP_NAME, GITHUB_URL} from './constants/app';
+import {useDocumentMeta} from './hooks/useDocumentMeta';
 
 export default function App() {
     const themeCtx = useThemeProvider();
-    const currencyCtx = useCurrencyProvider();
 
     return (
-        <CurrencyContext.Provider value={currencyCtx}>
+        <LocaleProvider>
             <ThemeContext.Provider value={themeCtx}>
                 <ModalProvider>
                     <AppContent/>
                 </ModalProvider>
             </ThemeContext.Provider>
-        </CurrencyContext.Provider>
+        </LocaleProvider>
     );
 }
 
 function AppContent() {
+    useDocumentMeta();
     const {t} = useTranslation();
     const {
         results,

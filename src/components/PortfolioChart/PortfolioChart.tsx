@@ -4,7 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import type { BankAccount } from '../../models/BankAccount';
 import { buildPortfolioChartData } from '../../utils/interest';
 import { formatCurrency } from '../../utils/format';
-import { useCurrency } from '../../hooks/useCurrency';
+import { useLocale } from '../../context/useLocale';
 import { DEFAULT_CURRENCY } from '../../enums/Currency';
 import { useTheme } from '../../hooks/useTheme';
 import './PortfolioChart.css';
@@ -39,7 +39,7 @@ interface PortfolioChartProps {
 
 export default function PortfolioChart({ items, viewMode = 'accrued' }: PortfolioChartProps) {
   const { t } = useTranslation();
-  const { currency: globalCurrency } = useCurrency();
+  const { currency: globalCurrency } = useLocale();
   const { theme } = useTheme();
   const colors = chartColors[theme];
   const data = useMemo(() => buildPortfolioChartData(items, viewMode), [items, viewMode]);

@@ -6,7 +6,7 @@ import { InterestType, getInterestTypeLabel } from '../../enums/InterestType';
 import { DayCountConvention, getDayCountLabel, getDayCountDescription } from '../../enums/DayCountConvention';
 import { BankAccountInput } from '../../models/BankAccountInput';
 import { AccountCalculator } from '../../calculator/AccountCalculator';
-import { useCurrency } from '../../hooks/useCurrency';
+import { useLocale } from '../../context/useLocale';
 import { SUPPORTED_CURRENCIES, CURRENCY_SYMBOLS, Currency } from '../../enums/Currency';
 import type { BankAccount } from '../../models/BankAccount';
 import { monthsBetween, daysBetween, todayISO, endOfMonthISO } from '../../utils/date';
@@ -26,7 +26,7 @@ const dayCountOptions = Object.values(DayCountConvention);
 
 export default function AccountForm({ onResult, editingResult, onCancelEdit }: AccountFormProps) {
   const { t } = useTranslation();
-  const { currency: globalCurrency } = useCurrency();
+  const { currency: globalCurrency } = useLocale();
   const [accountCurrency, setAccountCurrency] = useState<Currency | ''>('');
   const activeCurrency = accountCurrency || globalCurrency;
   const [startAmount, setStartAmount] = useState(formatAmountInput(10000, globalCurrency));

@@ -11,7 +11,7 @@ import { PayoutInterval, getIntervalLabel } from '../../enums/PayoutInterval';
 import { InterestType, getInterestTypeLabel } from '../../enums/InterestType';
 import type { Currency } from '../../enums/Currency';
 import { formatCurrency, formatDurationShort, formatDate, formatRate } from '../../utils/format';
-import { useCurrency } from '../../hooks/useCurrency';
+import { useLocale } from '../../context/useLocale';
 import CashFlowEditor from '../CashFlowEditor';
 import RateChangeEditor from '../RateChangeEditor';
 import { useModal } from '../../context/useModal';
@@ -106,7 +106,7 @@ function SortIndicator({ column, sortState }: { column: SortColumn; sortState: S
 
 export default function BankAccountsOverview({ results, onRemove, portfolioIds, onTogglePortfolio, onEdit, onNewAccount, onUpdateCashFlows, onUpdateRateChanges, onImport, onLoadDemo }: BankAccountsOverviewProps) {
   const { t } = useTranslation();
-  const { currency: globalCurrency } = useCurrency();
+  const { currency: globalCurrency } = useLocale();
   const [openId, setOpenId] = useState<string | null>(null);
   const [sortState, setSortState] = useState<SortState>(loadSortState);
   const { openModal } = useModal();

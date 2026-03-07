@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { useCurrency } from '../../hooks/useCurrency';
+import { useLocale } from '../../context/useLocale';
 import { SUPPORTED_CURRENCIES, Currency } from '../../enums/Currency';
 import './CurrencySelector.css';
 
 export default function CurrencySelector() {
   const { t } = useTranslation();
-  const { currency, setCurrency } = useCurrency();
+  const { currency, setCurrency } = useLocale();
 
   return (
     <div className="currency-selector">
