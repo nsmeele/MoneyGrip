@@ -1,0 +1,17 @@
+@reference "../../style.css";
+
+.currency-selector {
+  @apply flex items-center;
+}
+
+.currency-selector__select {
+  @apply px-2 py-1 text-xs font-medium cursor-pointer border-0 rounded-lg text-navy-500 bg-navy-100 transition-all duration-150 dark:text-navy-300 dark:bg-navy-800 appearance-none;
+}
+
+.currency-selector__select:hover {
+  @apply bg-navy-200 text-navy-700 dark:bg-navy-700 dark:text-navy-200;
+}
+
+.currency-selector__select:focus-visible {
+  @apply outline-none ring-2 ring-copper-500 ring-offset-1;
+}

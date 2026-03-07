@@ -158,7 +158,8 @@
     "dailyInterest": "Dagrente",
     "cumulativeInterest": "Opgebouwd",
     "showInactive": "Toon verlopen en toekomstige rekeningen",
-    "chartAriaLabel": "Maandelijkse rente-opbrengst grafiek"
+    "chartAriaLabel": "Maandelijkse rente-opbrengst grafiek",
+    "mixedCurrencies": "Totalen niet beschikbaar bij gemengde valuta's"
   },
   "exportModal": {
     "title": "Gegevens exporteren",
@@ -219,6 +220,11 @@
     "actActDesc": "Werkelijk aantal dagen per maand, 365 of 366 dagen per jaar. Gebruikt door o.a. Zweedse banken (Lea Bank, Brocc).",
     "act365Desc": "Werkelijk aantal dagen per maand, altijd 365 dagen per jaar (ook in een schrikkeljaar).",
     "thirty360Desc": "Elke maand telt als 30 dagen, elk jaar als 360 dagen. Gebruikt door o.a. Duitse banken (BW-Bank)."
+  },
+  "currency": {
+    "ariaLabel": "Valuta selecteren",
+    "label": "Valuta",
+    "defaultOption": "Standaard ({{code}})"
   },
   "format": {
     "years_one": "{{count}} jaar",

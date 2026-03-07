@@ -1,5 +1,6 @@
 import { PayoutInterval } from '../enums/PayoutInterval';
 import { InterestType } from '../enums/InterestType';
+import { Currency } from '../enums/Currency';
 import { EXPORT_FORMAT_VERSION } from '../models/ExportFile';
 import type { ExportFile, ExportedResult } from '../models/ExportFile';
 
@@ -9,6 +10,7 @@ export type ValidationResult =
 
 const PAYOUT_INTERVAL_VALUES = Object.values(PayoutInterval) as string[];
 const INTEREST_TYPE_VALUES = Object.values(InterestType) as string[];
+const CURRENCY_VALUES = Object.values(Currency) as string[];
 const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -108,6 +110,12 @@ function validateExportedResult(value: unknown, index: number): string | null {
 
   if (r.isOngoing !== undefined && typeof r.isOngoing !== 'boolean') {
     return `Rekening ${index + 1}: 'isOngoing' moet een boolean zijn.`;
+  }
+
+  if (r.currency !== undefined) {
+    if (typeof r.currency !== 'string' || !CURRENCY_VALUES.includes(r.currency)) {
+      return `Rekening ${index + 1}: 'currency' heeft een ongeldige waarde '${r.currency}'.`;
+    }
   }
 
   if (r.rateChanges !== undefined) {

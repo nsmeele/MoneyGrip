@@ -6,6 +6,8 @@ import { InterestType, INTEREST_TYPE_LABELS } from '../../enums/InterestType';
 import { DayCountConvention, DAY_COUNT_LABELS, DAY_COUNT_DESCRIPTIONS } from '../../enums/DayCountConvention';
 import { BankAccountInput } from '../../models/BankAccountInput';
 import { AccountCalculator } from '../../calculator/AccountCalculator';
+import { useCurrency } from '../../hooks/useCurrency';
+import { SUPPORTED_CURRENCIES, CURRENCY_SYMBOLS, Currency } from '../../enums/Currency';
 import type { BankAccount } from '../../models/BankAccount';
 import { monthsBetween, daysBetween, todayISO, endOfMonthISO } from '../../utils/date';
 import './AccountForm.css';
@@ -23,7 +25,9 @@ const dayCountOptions = Object.values(DayCountConvention);
 
 export default function AccountForm({ onResult, editingResult, onCancelEdit }: AccountFormProps) {
   const { t } = useTranslation();
+  const { currency: globalCurrency } = useCurrency();
   const [startAmount, setStartAmount] = useState('10000');
+  const [accountCurrency, setAccountCurrency] = useState<Currency | ''>('');
   const [interestRate, setInterestRate] = useState('3.5');
   const [years, setYears] = useState('5');
   const [months, setMonths] = useState('0');
@@ -49,6 +53,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
     setIsOngoing(editingResult.isOngoing);
     setDayCount(editingResult.dayCount);
     setIsVariableRate(editingResult.isVariableRate);
+    setAccountCurrency((editingResult.currency as Currency) ?? '');
   }
   if (!editingResult && prevEditingId[0] !== null) {
     prevEditingId[1](null);
@@ -108,7 +113,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
       ? Math.max(1, Math.ceil(daysBetween(startDate, endOfMonthISO(todayISO())) / 30.44) + 12)
       : hasDurationFromDates ? durationFromDates : parseInt(years) * 12 + parseInt(months || '0');
 
-    const input = new BankAccountInput(amount, rate, durationMonths, interval, interestType, startDate || undefined, editingResult?.cashFlows ?? [], isOngoing, dayCount, isVariableRate ? (editingResult?.rateChanges ?? []) : [], isVariableRate);
+    const input = new BankAccountInput(amount, rate, durationMonths, interval, interestType, startDate || undefined, editingResult?.cashFlows ?? [], isOngoing, dayCount, isVariableRate ? (editingResult?.rateChanges ?? []) : [], isVariableRate, accountCurrency || undefined);
     const result = calculator.calculate(input);
     onResult(result);
   }
@@ -118,7 +123,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
             <div className="form-group">
               <label className="form-label" htmlFor="startAmount">{t('form.deposit')}</label>
               <div className="form-input-prefix">
-                <span className="prefix">&euro;</span>
+                <span className="prefix">{CURRENCY_SYMBOLS[accountCurrency || globalCurrency]}</span>
                 <input
                   id="startAmount"
                   type="text"
@@ -317,6 +322,25 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="accountCurrency">
+                {t('currency.label')} {t('form.optional')}
+              </label>
+              <select
+                id="accountCurrency"
+                className="form-input"
+                value={accountCurrency}
+                onChange={(e) => setAccountCurrency(e.target.value as Currency | '')}
+              >
+                <option value="">{t('currency.defaultOption', { code: globalCurrency })}</option>
+                {SUPPORTED_CURRENCIES.map((code) => (
+                  <option key={code} value={code}>
+                    {CURRENCY_SYMBOLS[code]} {code}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <button type="submit" className="btn-primary">

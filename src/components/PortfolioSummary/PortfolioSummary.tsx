@@ -5,6 +5,7 @@ import type { BankAccount } from '../../models/BankAccount';
 import { expandCashFlows } from '../../models/CashFlow';
 import { INTERVAL_LABELS } from '../../enums/PayoutInterval';
 import { formatCurrency } from '../../utils/format';
+import { useCurrency } from '../../hooks/useCurrency';
 import { toMonthKey, addMonthsToISO, todayISO, toISO, getNextMonthStart, endOfMonthISO, parseDate } from '../../utils/date';
 import { yearFraction } from '../../utils/dayCount';
 import { getRateForDate } from '../../utils/rateChange';
@@ -97,7 +98,9 @@ interface PortfolioSummaryProps {
 
 export default function PortfolioSummary({ results, portfolioIds, onToggle }: PortfolioSummaryProps) {
   const { t, i18n } = useTranslation();
+  const { currency: globalCurrency } = useCurrency();
   const items = results.filter((r) => portfolioIds.has(r.id));
+  const hasMixedCurrencies = new Set(items.map((r) => r.currency ?? globalCurrency)).size > 1;
   const currentMonthKey = toMonthKey(todayISO());
   const [monthOffset, setMonthOffset] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -225,16 +228,22 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
         </button>
       </nav>
 
-      <div className="portfolio-stats">
-        <div className="portfolio-stat">
-          <div className="portfolio-stat-label">{t('portfolio.totalInvested')}</div>
-          <div className="portfolio-stat-value">{formatCurrency(totalInvested)}</div>
+      {hasMixedCurrencies ? (
+        <div className="portfolio-stats">
+          <p className="portfolio-stat-mixed">{t('portfolio.mixedCurrencies')}</p>
         </div>
-        <div className="portfolio-stat portfolio-stat--highlight">
-          <div className="portfolio-stat-label">{viewMode === 'disbursed' ? t('portfolio.disbursed') : t('portfolio.interestLabel')}</div>
-          <div className="portfolio-stat-value">{formatCurrency(totalForMonth)}</div>
+      ) : (
+        <div className="portfolio-stats">
+          <div className="portfolio-stat">
+            <div className="portfolio-stat-label">{t('portfolio.totalInvested')}</div>
+            <div className="portfolio-stat-value">{formatCurrency(totalInvested, globalCurrency)}</div>
+          </div>
+          <div className="portfolio-stat portfolio-stat--highlight">
+            <div className="portfolio-stat-label">{viewMode === 'disbursed' ? t('portfolio.disbursed') : t('portfolio.interestLabel')}</div>
+            <div className="portfolio-stat-value">{formatCurrency(totalForMonth, globalCurrency)}</div>
+          </div>
         </div>
-      </div>
+      )}
 
       <PortfolioChart items={items} viewMode={viewMode} />
 
@@ -250,6 +259,7 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
         {visible.map((r) => {
           const status = itemStatusForMonth(r, selectedMonthKey);
           const isExpanded = expandedId === r.id;
+          const cur = r.currency ?? globalCurrency;
           const days = isExpanded && viewMode === 'accrued' ? getMonthDays(r, selectedMonthKey) : [];
           const disbursedAmount = r.calendarMonthDisbursement.get(selectedMonthKey) ?? 0;
           return (
@@ -274,7 +284,8 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
                 {formatCurrency(
                   viewMode === 'disbursed'
                     ? (r.calendarMonthDisbursement.get(selectedMonthKey) ?? 0)
-                    : (r.calendarMonthProjection.get(selectedMonthKey) ?? 0)
+                    : (r.calendarMonthProjection.get(selectedMonthKey) ?? 0),
+                  cur,
                 )}
               </div>
               <span className={`portfolio-item-chevron${isExpanded ? ' portfolio-item-chevron--open' : ''}`}>
@@ -293,7 +304,7 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
               <div className="portfolio-breakdown">
                 {viewMode === 'disbursed' ? (
                   disbursedAmount > 0
-                    ? <p className="portfolio-breakdown__payout">{t('portfolio.payoutAmount', { amount: formatCurrency(disbursedAmount) })}</p>
+                    ? <p className="portfolio-breakdown__payout">{t('portfolio.payoutAmount', { amount: formatCurrency(disbursedAmount, cur) })}</p>
                     : <p className="portfolio-breakdown__empty">{t('portfolio.noPayoutThisMonth')}</p>
                 ) : days.length > 0 ? (
                   <table className="portfolio-breakdown__table">
@@ -310,10 +321,10 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
                       {days.map((day) => (
                         <tr key={day.date}>
                           <td>{parseDate(day.date).getDate()}</td>
-                          <td>{formatCurrency(day.balance)}</td>
+                          <td>{formatCurrency(day.balance, cur)}</td>
                           <td>{day.rate}%</td>
-                          <td>{formatCurrency(day.dayInterest)}</td>
-                          <td>{formatCurrency(day.cumulative)}</td>
+                          <td>{formatCurrency(day.dayInterest, cur)}</td>
+                          <td>{formatCurrency(day.cumulative, cur)}</td>
                         </tr>
                       ))}
                     </tbody>

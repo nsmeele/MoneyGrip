@@ -1,4 +1,5 @@
 import { PayoutInterval } from '../enums/PayoutInterval';
+import { CURRENCY_SYMBOLS, type Currency } from '../enums/Currency';
 import { InterestType } from '../enums/InterestType';
 import { DayCountConvention } from '../enums/DayCountConvention';
 import type { CashFlow } from './CashFlow';
@@ -17,6 +18,7 @@ export class BankAccountInput {
     public readonly dayCount: DayCountConvention = DayCountConvention.NOM_12,
     public readonly rateChanges: RateChange[] = [],
     public readonly isVariableRate: boolean = false,
+    public readonly currency?: string,
   ) {}
 
   get durationYears(): number {
@@ -24,6 +26,7 @@ export class BankAccountInput {
   }
 
   get label(): string {
-    return `€${this.startAmount.toLocaleString('nl-NL')} @ ${this.annualInterestRate}%`;
+    const symbol = this.currency ? (CURRENCY_SYMBOLS[this.currency as Currency] ?? this.currency) : '\u20AC';
+    return `${symbol}${this.startAmount.toLocaleString('nl-NL')} @ ${this.annualInterestRate}%`;
   }
 }

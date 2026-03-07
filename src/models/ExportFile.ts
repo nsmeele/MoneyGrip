@@ -22,6 +22,7 @@ export interface ExportedResult {
   dayCount?: DayCountConvention;
   rateChanges?: RateChange[];
   isVariableRate?: boolean;
+  currency?: string;
 }
 
 export interface ExportFile {

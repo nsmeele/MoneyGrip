@@ -28,6 +28,7 @@ export class AccountCalculator implements IAccountCalculator {
       input.dayCount,
       input.rateChanges,
       input.isVariableRate,
+      input.currency,
     );
   }
 

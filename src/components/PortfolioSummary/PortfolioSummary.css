@@ -71,6 +71,10 @@
   @apply text-copper-600 dark:text-copper-400;
 }
 
+.portfolio-stat-mixed {
+  @apply text-xs text-navy-400 italic dark:text-navy-500;
+}
+
 .portfolio-items {
   @apply flex flex-col;
 }

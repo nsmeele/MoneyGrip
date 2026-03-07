@@ -6,9 +6,15 @@
 - `npm run build` — TypeScript check + build
 - `npm run lint` — ESLint
 
+## Frontend Stack
+
+- React 19
+- TypeScript 
+- Tailwind 4
+- Vite 7
+
 ## Frontend Regels
 
-- React 19 + TypeScript + Tailwind CSS 4 + Vite 7
 - Mobile-first responsive design
 - Component-based architectuur met single responsibility
 - DRY: geen dubbele logica, herbruikbare componenten, gedeelde CSS classes in `src/style.css`
@@ -20,3 +26,17 @@
 - CSS classes via `@apply` in `src/style.css`, geen inline Tailwind in JSX
 - UI-teksten in het Nederlands, code in het Engels
 - Gebruik Tailwind functions and directives
+- Gebruik i18n voor tekst, zelfs als er nu maar één taal is (voor toekomstige uitbreidbaarheid)
+- Gebruik React Context voor globale state (zoals thema, taal, gebruikersauthenticatie)
+
+## Refactor guidelines
+
+- Identificeer code duplicatie of complexe componenten
+- KISS: houd het simpel, splits grote componenten op in kleinere, herbruikbare stukken
+- Gebruik code die al bestaat in plaats van nieuwe code te schrijven (DRY)
+- Schrijf unit tests voor nieuwe of aangepaste functionaliteit
+- Gebruik geen magic strings of getallen, definieer constanten of enums, kijk ook wat er al is
+
+## Commit rules
+
+

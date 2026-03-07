@@ -18,6 +18,7 @@ export function toExportedResult(r: BankAccount): ExportedResult {
     dayCount: r.dayCount,
     rateChanges: r.rateChanges.length > 0 ? r.rateChanges : undefined,
     isVariableRate: r.isVariableRate || undefined,
+    currency: r.currency || undefined,
   };
 }
 

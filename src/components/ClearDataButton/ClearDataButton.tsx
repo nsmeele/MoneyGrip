@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { useModal } from '../../context/ModalContext';
+import { useModal } from '../../context/useModal';
 
 interface ClearDataButtonProps {
   onClear: () => void;

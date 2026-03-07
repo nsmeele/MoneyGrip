@@ -32,6 +32,7 @@ function reconstructResult(item: ExportedResult, ongoingDuration?: number): Bank
     const input = new BankAccountInput(
       item.startAmount, item.annualInterestRate, durationMonths,
       item.interval, item.interestType, item.startDate, cashFlows, isOngoing, dayCount, rateChanges, isVariableRate,
+      item.currency,
     );
     result = calc.calculate(input);
   } else {
@@ -39,6 +40,7 @@ function reconstructResult(item: ExportedResult, ongoingDuration?: number): Bank
       item.startAmount, item.annualInterestRate, durationMonths,
       item.interval, item.interestType, item.startDate, item.periods,
       cashFlows, isOngoing, dayCount, rateChanges, isVariableRate,
+      item.currency,
     );
   }
 

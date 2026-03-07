@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { BankAccount } from '../models/BankAccount';
 import { PayoutInterval } from '../enums/PayoutInterval';
 import { InterestType } from '../enums/InterestType';
-import { sortAccounts } from '../components/BankAccountsOverview/BankAccountsOverview';
-import type { SortState } from '../components/BankAccountsOverview/BankAccountsOverview';
+import { sortAccounts } from '../components/BankAccountsOverview/sortAccounts';
+import type { SortState } from '../components/BankAccountsOverview/sortAccounts';
 
 function makeAccount(overrides: {
   startAmount?: number;

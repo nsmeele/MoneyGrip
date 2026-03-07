@@ -3,14 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import type { CashFlow } from '../../models/CashFlow';
 import { formatCurrency, formatDate } from '../../utils/format';
+import { CURRENCY_SYMBOLS, type Currency } from '../../enums/Currency';
 import './CashFlowEditor.css';
 
 interface CashFlowEditorProps {
   cashFlows: CashFlow[];
   onUpdate: (cashFlows: CashFlow[]) => void;
+  currency: string;
 }
 
-export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorProps) {
+export default function CashFlowEditor({ cashFlows, onUpdate, currency }: CashFlowEditorProps) {
   const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [isWithdrawal, setIsWithdrawal] = useState(false);
@@ -104,7 +106,7 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
             <div>
               <label className="form-label" htmlFor="cf-amount">{t('cashflow.amount')}</label>
               <div className="form-input-prefix">
-                <span className="prefix">&euro;</span>
+                <span className="prefix">{CURRENCY_SYMBOLS[currency as Currency] ?? currency}</span>
                 <input
                   id="cf-amount"
                   type="text"
@@ -181,7 +183,7 @@ export default function CashFlowEditor({ cashFlows, onUpdate }: CashFlowEditorPr
                 )}
               </span>
               <span className={`cashflow-item__amount${cf.amount >= 0 ? ' cashflow-item__amount--deposit' : ' cashflow-item__amount--withdrawal'}`}>
-                {cf.amount >= 0 ? '+' : '\u2212'}{formatCurrency(Math.abs(cf.amount))}
+                {cf.amount >= 0 ? '+' : '\u2212'}{formatCurrency(Math.abs(cf.amount), currency)}
               </span>
               <button
                 className="btn-icon"

@@ -7,8 +7,10 @@ import LanguageSwitcher from './components/LanguageSwitcher';
 import { useResultStorage } from './hooks/useResultStorage';
 import { usePortfolio } from './hooks/usePortfolio';
 import { useDataTransfer } from './hooks/useDataTransfer';
-import { useModal } from './context/ModalContext';
+import { useModal } from './context/useModal';
 import { useThemeProvider, ThemeContext } from './hooks/useTheme';
+import { useCurrencyProvider, CurrencyContext } from './hooks/useCurrency';
+import CurrencySelector from './components/CurrencySelector';
 import { useLastTabClear } from './hooks/useLastTabClear';
 import ClearDataButton from './components/ClearDataButton';
 import { BanknotesIcon, ChartBarIcon, ArrowUpTrayIcon, ArrowDownTrayIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
@@ -22,6 +24,7 @@ import { demoData } from './transfer/demoData';
 export default function App() {
   const { t } = useTranslation();
   const themeCtx = useThemeProvider();
+  const currencyCtx = useCurrencyProvider();
   const { results, addResult, updateResult, removeResult, clearResults, replaceResults, mergeResults } = useResultStorage();
   const { portfolioIds, togglePortfolio, clearPortfolio, replacePortfolio, mergePortfolio } = usePortfolio();
   const transfer = useDataTransfer(results, portfolioIds, replaceResults, mergeResults, replacePortfolio, mergePortfolio);
@@ -81,12 +84,7 @@ export default function App() {
   }
 
   const hasResults = results.length > 0;
-
-  useEffect(() => {
-    if (!hasResults && mobileTab === 'portfolio') {
-      setMobileTab('accounts');
-    }
-  }, [hasResults, mobileTab]);
+  const effectiveMobileTab = hasResults ? mobileTab : 'accounts';
 
   function handleNewAccount() {
     openModal({
@@ -126,6 +124,7 @@ export default function App() {
       existing.dayCount,
       existing.rateChanges,
       existing.isVariableRate,
+      existing.currency,
     );
     const recalculated = calc.calculate(input);
     updateResult(id, recalculated);
@@ -148,12 +147,14 @@ export default function App() {
       existing.dayCount,
       rateChanges,
       existing.isVariableRate,
+      existing.currency,
     );
     const recalculated = calc.calculate(input);
     updateResult(id, recalculated);
   }
 
   return (
+    <CurrencyContext.Provider value={currencyCtx}>
     <ThemeContext.Provider value={themeCtx}>
     <div className="app-background">
       <div className="app-container">
@@ -191,6 +192,7 @@ export default function App() {
                 <span className="toolbar-separator" aria-hidden="true" />
               </>
             )}
+            <CurrencySelector />
             <LanguageSwitcher />
             <ThemeToggle />
             <input
@@ -260,7 +262,7 @@ export default function App() {
         </header>
 
         <main className="main-layout">
-          <div className={`main-section${mobileTab === 'accounts' || !hasResults ? ' main-section--active' : ''}`}>
+          <div className={`main-section${effectiveMobileTab === 'accounts' ? ' main-section--active' : ''}`}>
             <BankAccountsOverview
               results={results}
               onRemove={removeResult}
@@ -275,7 +277,7 @@ export default function App() {
             />
           </div>
           {hasResults && (
-            <div className={`main-section${mobileTab === 'portfolio' ? ' main-section--active' : ''}`}>
+            <div className={`main-section${effectiveMobileTab === 'portfolio' ? ' main-section--active' : ''}`}>
               <PortfolioSummary
                 results={results}
                 portfolioIds={portfolioIds}
@@ -297,14 +299,14 @@ export default function App() {
       {hasResults && (
         <nav className="mobile-tab-bar" aria-label={t('nav.ariaLabel')}>
           <button
-            className={`mobile-tab${mobileTab === 'accounts' ? ' mobile-tab--active' : ''}`}
+            className={`mobile-tab${effectiveMobileTab === 'accounts' ? ' mobile-tab--active' : ''}`}
             onClick={() => setMobileTab('accounts')}
           >
             <BanknotesIcon aria-hidden="true" />
             <span>{t('accounts.sectionLabel')}</span>
           </button>
           <button
-            className={`mobile-tab${mobileTab === 'portfolio' ? ' mobile-tab--active' : ''}`}
+            className={`mobile-tab${effectiveMobileTab === 'portfolio' ? ' mobile-tab--active' : ''}`}
             onClick={() => setMobileTab('portfolio')}
           >
             <ChartBarIcon aria-hidden="true" />
@@ -314,5 +316,6 @@ export default function App() {
       )}
     </div>
     </ThemeContext.Provider>
+    </CurrencyContext.Provider>
   );
 }

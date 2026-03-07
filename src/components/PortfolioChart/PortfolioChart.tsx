@@ -4,6 +4,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import type { BankAccount } from '../../models/BankAccount';
 import { buildPortfolioChartData } from '../../utils/interest';
 import { formatCurrency } from '../../utils/format';
+import { useCurrency } from '../../hooks/useCurrency';
+import { DEFAULT_CURRENCY } from '../../enums/Currency';
 import { useTheme } from '../../hooks/useTheme';
 import './PortfolioChart.css';
 
@@ -11,15 +13,16 @@ interface ChartTooltipProps {
   active?: boolean;
   payload?: Array<{ value: number }>;
   label?: string;
+  currency?: string;
 }
 
-function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
+function ChartTooltip({ active, payload, label, currency = DEFAULT_CURRENCY }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
 
   return (
     <div className="portfolio-chart__tooltip">
       <div className="portfolio-chart__tooltip-label">{label}</div>
-      <div className="portfolio-chart__tooltip-value">{formatCurrency(payload[0].value as number)}</div>
+      <div className="portfolio-chart__tooltip-value">{formatCurrency(payload[0].value as number, currency)}</div>
     </div>
   );
 }
@@ -36,6 +39,7 @@ interface PortfolioChartProps {
 
 export default function PortfolioChart({ items, viewMode = 'accrued' }: PortfolioChartProps) {
   const { t } = useTranslation();
+  const { currency: globalCurrency } = useCurrency();
   const { theme } = useTheme();
   const colors = chartColors[theme];
   const data = useMemo(() => buildPortfolioChartData(items, viewMode), [items, viewMode]);
@@ -68,9 +72,9 @@ export default function PortfolioChart({ items, viewMode = 'accrued' }: Portfoli
               tick={{ fontSize: 10, fill: colors.tick }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v: number) => `€${Math.round(v)}`}
+              tickFormatter={(v: number) => formatCurrency(Math.round(v), globalCurrency)}
             />
-            <Tooltip content={<ChartTooltip />} />
+            <Tooltip content={<ChartTooltip currency={globalCurrency} />} />
             <Area
               type="monotone"
               dataKey="interest"

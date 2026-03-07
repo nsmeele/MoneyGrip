@@ -158,7 +158,8 @@
     "dailyInterest": "Daily interest",
     "cumulativeInterest": "Accrued",
     "showInactive": "Show expired and upcoming accounts",
-    "chartAriaLabel": "Monthly interest earnings chart"
+    "chartAriaLabel": "Monthly interest earnings chart",
+    "mixedCurrencies": "Totals unavailable with mixed currencies"
   },
   "exportModal": {
     "title": "Export data",
@@ -219,6 +220,11 @@
     "actActDesc": "Actual number of days per month, 365 or 366 days per year. Used by e.g. Swedish banks (Lea Bank, Brocc).",
     "act365Desc": "Actual number of days per month, always 365 days per year (even in a leap year).",
     "thirty360Desc": "Every month counts as 30 days, every year as 360 days. Used by e.g. German banks (BW-Bank)."
+  },
+  "currency": {
+    "ariaLabel": "Select currency",
+    "label": "Currency",
+    "defaultOption": "Default ({{code}})"
   },
   "format": {
     "years_one": "{{count}} year",

@@ -6,10 +6,10 @@ function getLocale(): string {
   return LOCALE_MAP[i18n.language as SupportedLanguage] ?? 'nl-NL';
 }
 
-export function formatCurrency(value: number): string {
+export function formatCurrency(value: number, currency: string): string {
   return new Intl.NumberFormat(getLocale(), {
     style: 'currency',
-    currency: 'EUR',
+    currency,
   }).format(value);
 }
 

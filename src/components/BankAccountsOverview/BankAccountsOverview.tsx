@@ -10,14 +10,12 @@ import type { RateChange } from '../../models/RateChange';
 import { PayoutInterval, INTERVAL_LABELS } from '../../enums/PayoutInterval';
 import { InterestType, INTEREST_TYPE_LABELS } from '../../enums/InterestType';
 import { formatCurrency, formatDurationShort, formatDate } from '../../utils/format';
+import { useCurrency } from '../../hooks/useCurrency';
 import CashFlowEditor from '../CashFlowEditor';
 import RateChangeEditor from '../RateChangeEditor';
-import { useModal } from '../../context/ModalContext';
+import { useModal } from '../../context/useModal';
+import { sortAccounts, type SortColumn, type SortState } from './sortAccounts';
 import './BankAccountsOverview.css';
-
-export type SortColumn = 'balance' | 'endDate';
-export type SortDirection = 'asc' | 'desc';
-export type SortState = { column: SortColumn; direction: SortDirection } | null;
 
 const SORT_STORAGE_KEY = 'bank-account-sort';
 
@@ -39,40 +37,6 @@ function saveSortState(state: SortState) {
   } else {
     localStorage.removeItem(SORT_STORAGE_KEY);
   }
-}
-
-function getBalanceValue(r: BankAccount): number {
-  return r.interestType === InterestType.Compound ? r.currentBalance + r.disbursedToDate : r.currentBalance;
-}
-
-export function sortAccounts(results: BankAccount[], sortState: SortState): BankAccount[] {
-  const sorted = [...results];
-
-  if (!sortState) {
-    // Default: ongoing first, then by end date ascending
-    return sorted.sort((a, b) => {
-      if (!a.endDate && !b.endDate) return 0;
-      if (!a.endDate) return -1;
-      if (!b.endDate) return 1;
-      return a.endDate.localeCompare(b.endDate);
-    });
-  }
-
-  const dir = sortState.direction === 'asc' ? 1 : -1;
-
-  return sorted.sort((a, b) => {
-    switch (sortState.column) {
-      case 'balance':
-        return (getBalanceValue(a) - getBalanceValue(b)) * dir;
-      case 'endDate': {
-        // Ongoing (no endDate) = "infinity"
-        if (!a.endDate && !b.endDate) return 0;
-        if (!a.endDate) return dir;
-        if (!b.endDate) return -dir;
-        return a.endDate.localeCompare(b.endDate) * dir;
-      }
-    }
-  });
 }
 
 interface BankAccountsOverviewProps {
@@ -141,6 +105,7 @@ function SortIndicator({ column, sortState }: { column: SortColumn; sortState: S
 
 export default function BankAccountsOverview({ results, onRemove, portfolioIds, onTogglePortfolio, onEdit, onNewAccount, onUpdateCashFlows, onUpdateRateChanges, onImport, onLoadDemo }: BankAccountsOverviewProps) {
   const { t } = useTranslation();
+  const { currency: globalCurrency } = useCurrency();
   const [openId, setOpenId] = useState<string | null>(null);
   const [sortState, setSortState] = useState<SortState>(loadSortState);
   const { openModal } = useModal();
@@ -242,6 +207,7 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
           <tbody>
             {sorted.map((r) => {
               const isOpen = openId === r.id;
+              const cur = r.currency ?? globalCurrency;
               return (
                 <Fragment key={r.id}>
                   <tr
@@ -252,7 +218,7 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
                       <ChevronDownIcon className={`comparison-chevron${isOpen ? ' comparison-chevron--open' : ''}`} aria-hidden="true" />
                     </td>
                     <td className="amount">
-                      {formatCurrency(r.interestType === InterestType.Compound ? r.currentBalance + r.disbursedToDate : r.currentBalance)}
+                      {formatCurrency(r.interestType === InterestType.Compound ? r.currentBalance + r.disbursedToDate : r.currentBalance, cur)}
                       <span className="comparison-rate">@ {r.annualInterestRate}%</span>
                     </td>
                     <td>
@@ -316,12 +282,12 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
                           <div className="period-detail-status">
                             {r.disbursedToDate > 0 && (
                               <span className="period-detail-status__item">
-                                <strong><ColumnInfo label={t('accounts.disbursed')} info={t('accounts.disbursedInfo')} /></strong> {formatCurrency(r.disbursedToDate)}
+                                <strong><ColumnInfo label={t('accounts.disbursed')} info={t('accounts.disbursedInfo')} /></strong> {formatCurrency(r.disbursedToDate, cur)}
                               </span>
                             )}
                             {r.accruedInterest > 0 && (
                               <span className="period-detail-status__item">
-                                <strong><ColumnInfo label={t('accounts.accrued')} info={t('accounts.accruedInfo')} /></strong> {formatCurrency(r.accruedInterest)}
+                                <strong><ColumnInfo label={t('accounts.accrued')} info={t('accounts.accruedInfo')} /></strong> {formatCurrency(r.accruedInterest, cur)}
                               </span>
                             )}
                             {r.nextPayoutDate && (
@@ -355,15 +321,15 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
                                         <span className="period-table__date">{formatDate(periodStart)} – {formatDate(p.endDate)}</span>
                                       )}
                                     </td>
-                                    <td>{formatCurrency(p.startBalance)}</td>
+                                    <td>{formatCurrency(p.startBalance, cur)}</td>
                                     {r.totalDeposited !== 0 && (
                                       <td className={p.deposited > 0 ? 'text-success' : p.deposited < 0 ? 'text-danger' : ''}>
-                                        {p.deposited !== 0 ? formatCurrency(p.deposited) : '—'}
+                                        {p.deposited !== 0 ? formatCurrency(p.deposited, cur) : '—'}
                                       </td>
                                     )}
-                                    <td>{formatCurrency(p.interestEarned)}</td>
-                                    <td>{formatCurrency(p.disbursed)}</td>
-                                    <td>{formatCurrency(idx === r.periods.length - 1 && r.interval === PayoutInterval.AtMaturity ? r.endAmount : p.endBalance)}</td>
+                                    <td>{formatCurrency(p.interestEarned, cur)}</td>
+                                    <td>{formatCurrency(p.disbursed, cur)}</td>
+                                    <td>{formatCurrency(idx === r.periods.length - 1 && r.interval === PayoutInterval.AtMaturity ? r.endAmount : p.endBalance, cur)}</td>
                                   </tr>
                                   );
                                 })}
@@ -374,20 +340,20 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
                             <dl className="period-summary__list">
                               <div className="period-summary__item">
                                 <dt>{t('accounts.deposit')}</dt>
-                                <dd>{formatCurrency(r.currentBalance)}</dd>
+                                <dd>{formatCurrency(r.currentBalance, cur)}</dd>
                               </div>
                               <div className="period-summary__item">
                                 <dt>{t('accounts.totalInterest')}</dt>
-                                <dd className="period-summary__highlight">{formatCurrency(r.totalInterest)}</dd>
+                                <dd className="period-summary__highlight">{formatCurrency(r.totalInterest, cur)}</dd>
                               </div>
                               <div className="period-summary__item">
                                 <dt>{t('accounts.endAmount')}</dt>
-                                <dd>{formatCurrency(r.endAmount)}</dd>
+                                <dd>{formatCurrency(r.endAmount, cur)}</dd>
                               </div>
                               {r.interestThisMonth > 0 && (
                                 <div className="period-summary__item">
                                   <dt>{t('accounts.interestThisMonth')}</dt>
-                                  <dd>{formatCurrency(r.interestThisMonth)}</dd>
+                                  <dd>{formatCurrency(r.interestThisMonth, cur)}</dd>
                                 </div>
                               )}
                             </dl>
@@ -397,6 +363,7 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
                           <CashFlowEditor
                             cashFlows={r.cashFlows}
                             onUpdate={(cfs) => onUpdateCashFlows(r.id, cfs)}
+                            currency={cur}
                           />
                           {r.isVariableRate && (
                             <RateChangeEditor
