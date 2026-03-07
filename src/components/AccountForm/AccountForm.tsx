@@ -10,7 +10,7 @@ import { useCurrency } from '../../hooks/useCurrency';
 import { SUPPORTED_CURRENCIES, CURRENCY_SYMBOLS, Currency } from '../../enums/Currency';
 import type { BankAccount } from '../../models/BankAccount';
 import { monthsBetween, daysBetween, todayISO, endOfMonthISO } from '../../utils/date';
-import { formatAmountInput, parseAmountInput, formatAmountDefault } from '../../utils/format';
+import { formatAmountInput, parseAmountInput } from '../../utils/format';
 import './AccountForm.css';
 
 interface AccountFormProps {
@@ -29,7 +29,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
   const { currency: globalCurrency } = useCurrency();
   const [accountCurrency, setAccountCurrency] = useState<Currency | ''>('');
   const activeCurrency = accountCurrency || globalCurrency;
-  const [startAmount, setStartAmount] = useState(formatAmountDefault(10000, globalCurrency));
+  const [startAmount, setStartAmount] = useState(formatAmountInput(10000, globalCurrency));
   const [interestRate, setInterestRate] = useState('3.5');
   const [years, setYears] = useState('5');
   const [months, setMonths] = useState('0');
@@ -44,7 +44,7 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
   const prevEditingId = useState<string | null>(null);
   if (editingResult && editingResult.id !== prevEditingId[0]) {
     prevEditingId[1](editingResult.id);
-    setStartAmount(formatAmountDefault(editingResult.startAmount, (editingResult.currency as Currency) || globalCurrency));
+    setStartAmount(formatAmountInput(editingResult.startAmount, (editingResult.currency as Currency) || globalCurrency));
     setInterestRate(editingResult.annualInterestRate.toString());
     setYears(Math.floor(editingResult.durationMonths / 12).toString());
     setMonths((editingResult.durationMonths % 12).toString());

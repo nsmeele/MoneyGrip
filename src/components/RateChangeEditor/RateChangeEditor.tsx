@@ -2,15 +2,17 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import type { RateChange } from '../../models/RateChange';
-import { formatDate, formatNumber } from '../../utils/format';
+import { formatDate, formatRate } from '../../utils/format';
+import type { Currency } from '../../enums/Currency';
 import './RateChangeEditor.css';
 
 interface RateChangeEditorProps {
   rateChanges: RateChange[];
+  currency: Currency;
   onUpdate: (rateChanges: RateChange[]) => void;
 }
 
-export default function RateChangeEditor({ rateChanges, onUpdate }: RateChangeEditorProps) {
+export default function RateChangeEditor({ rateChanges, currency, onUpdate }: RateChangeEditorProps) {
   const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [date, setDate] = useState('');
@@ -105,7 +107,7 @@ export default function RateChangeEditor({ rateChanges, onUpdate }: RateChangeEd
           {sorted.map((rc) => (
             <div key={rc.id} className="rate-change-item">
               <span className="rate-change-item__date">{formatDate(rc.date)}</span>
-              <span className="rate-change-item__rate">{formatNumber(rc.annualInterestRate, { minimumFractionDigits: 2 })}%</span>
+              <span className="rate-change-item__rate">{formatRate(rc.annualInterestRate, currency)}%</span>
               <button
                 className="btn-icon"
                 title={t('rateChange.delete')}

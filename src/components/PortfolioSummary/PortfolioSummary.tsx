@@ -4,7 +4,7 @@ import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, StarIcon
 import type { BankAccount } from '../../models/BankAccount';
 import { expandCashFlows } from '../../models/CashFlow';
 import { getIntervalLabel } from '../../enums/PayoutInterval';
-import { formatCurrency, formatAccountLabel } from '../../utils/format';
+import { formatCurrency, formatAccountLabel, formatRate } from '../../utils/format';
 import { useCurrency } from '../../hooks/useCurrency';
 import { toMonthKey, addMonthsToISO, todayISO, toISO, getNextMonthStart, endOfMonthISO, parseDate } from '../../utils/date';
 import { yearFraction } from '../../utils/dayCount';
@@ -322,7 +322,7 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
                         <tr key={day.date}>
                           <td>{parseDate(day.date).getDate()}</td>
                           <td>{formatCurrency(day.balance, cur)}</td>
-                          <td>{day.rate}%</td>
+                          <td>{formatRate(day.rate, cur)}%</td>
                           <td>{formatCurrency(day.dayInterest, cur)}</td>
                           <td>{formatCurrency(day.cumulative, cur)}</td>
                         </tr>

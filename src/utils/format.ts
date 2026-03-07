@@ -39,18 +39,19 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions):
   return new Intl.NumberFormat(getLocale(), options).format(value);
 }
 
-export function formatAccountLabel(balance: number, rate: number, currencyCode: string): string {
-  return `${formatCurrency(balance, currencyCode)} @ ${rate}%`;
+export function formatRate(rate: number, currencyCode: Currency): string {
+  const precision = Number.isInteger(rate) ? 1 : 2;
+  return createCurrency(rate, currencyCode).format({ symbol: '', precision }).trim();
 }
 
-export function formatAmountInput(value: string, currencyCode: Currency): string {
-  return createCurrency(value, currencyCode).format({ symbol: '' });
+export function formatAccountLabel(balance: number, rate: number, currencyCode: string): string {
+  return `${formatCurrency(balance, currencyCode)} @ ${formatRate(rate, currencyCode as Currency)}%`;
+}
+
+export function formatAmountInput(value: string | number, currencyCode: Currency): string {
+  return createCurrency(value, currencyCode).format({ symbol: '' }).trim();
 }
 
 export function parseAmountInput(value: string, currencyCode: Currency): number {
   return createCurrency(value, currencyCode).value;
-}
-
-export function formatAmountDefault(value: number, currencyCode: Currency): string {
-  return createCurrency(value, currencyCode).format({ symbol: '' });
 }

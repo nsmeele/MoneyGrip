@@ -9,7 +9,7 @@ import type { CashFlow } from '../../models/CashFlow';
 import type { RateChange } from '../../models/RateChange';
 import { PayoutInterval, getIntervalLabel } from '../../enums/PayoutInterval';
 import { InterestType, getInterestTypeLabel } from '../../enums/InterestType';
-import { formatCurrency, formatDurationShort, formatDate } from '../../utils/format';
+import { formatCurrency, formatDurationShort, formatDate, formatRate } from '../../utils/format';
 import { useCurrency } from '../../hooks/useCurrency';
 import CashFlowEditor from '../CashFlowEditor';
 import RateChangeEditor from '../RateChangeEditor';
@@ -219,7 +219,7 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
                     </td>
                     <td className="amount">
                       {formatCurrency(r.interestType === InterestType.Compound ? r.currentBalance + r.disbursedToDate : r.currentBalance, cur)}
-                      <span className="comparison-rate">@ {r.annualInterestRate}%</span>
+                      <span className="comparison-rate">@ {formatRate(r.annualInterestRate, cur)}%</span>
                     </td>
                     <td>
                       {r.isOngoing
@@ -368,6 +368,7 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
                           {r.isVariableRate && (
                             <RateChangeEditor
                               rateChanges={r.rateChanges}
+                              currency={cur}
                               onUpdate={(rcs) => onUpdateRateChanges(r.id, rcs)}
                             />
                           )}
