@@ -6,6 +6,7 @@ import { expandCashFlows } from '../../models/CashFlow';
 import { getIntervalLabel } from '../../enums/PayoutInterval';
 import { formatCurrency, formatAccountLabel, formatRate } from '../../utils/format';
 import { useCurrency } from '../../hooks/useCurrency';
+import type { Currency } from '../../enums/Currency';
 import { toMonthKey, addMonthsToISO, todayISO, toISO, getNextMonthStart, endOfMonthISO, parseDate } from '../../utils/date';
 import { yearFraction } from '../../utils/dayCount';
 import { getRateForDate } from '../../utils/rateChange';
@@ -106,6 +107,7 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'accrued' | 'disbursed'>('accrued');
   const [showInactive, setShowInactive] = useState(false);
+  const [showZeroInterest, setShowZeroInterest] = useState(false);
 
   const locale = LOCALE_MAP[i18n.language as SupportedLanguage] ?? 'nl-NL';
 
@@ -254,12 +256,16 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
             const projB = viewMode === 'disbursed' ? b.calendarMonthDisbursement : b.calendarMonthProjection;
             return (projB.get(selectedMonthKey) ?? 0) - (projA.get(selectedMonthKey) ?? 0);
           });
-          const visible = showInactive ? sorted : sorted.filter((r) => itemStatusForMonth(r, selectedMonthKey) === 'active');
+          const afterInactive = showInactive ? sorted : sorted.filter((r) => itemStatusForMonth(r, selectedMonthKey) === 'active');
+          const visible = showZeroInterest ? afterInactive : afterInactive.filter((r) => {
+            const projection = viewMode === 'disbursed' ? r.calendarMonthDisbursement : r.calendarMonthProjection;
+            return Math.round((projection.get(selectedMonthKey) ?? 0) * 100) !== 0;
+          });
           return (<>
         {visible.map((r) => {
           const status = itemStatusForMonth(r, selectedMonthKey);
           const isExpanded = expandedId === r.id;
-          const cur = r.currency ?? globalCurrency;
+          const cur = (r.currency as Currency | undefined) ?? globalCurrency;
           const days = isExpanded && viewMode === 'accrued' ? getMonthDays(r, selectedMonthKey) : [];
           const disbursedAmount = r.calendarMonthDisbursement.get(selectedMonthKey) ?? 0;
           return (
@@ -337,6 +343,10 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
           </div>
           );
         })}
+        <div className="form-checkbox portfolio-inactive-toggle">
+          <input type="checkbox" id="showZeroInterest" checked={showZeroInterest} onChange={(e) => setShowZeroInterest(e.target.checked)} />
+          <label htmlFor="showZeroInterest">{t('portfolio.showZeroInterest')}</label>
+        </div>
         <div className="form-checkbox portfolio-inactive-toggle">
           <input type="checkbox" id="showInactive" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} />
           <label htmlFor="showInactive">{t('portfolio.showInactive')}</label>

@@ -160,6 +160,7 @@
     "dailyInterest": "Dagrente",
     "cumulativeInterest": "Opgebouwd",
     "showInactive": "Toon verlopen en toekomstige rekeningen",
+    "showZeroInterest": "Toon rekeningen zonder rente deze maand",
     "chartAriaLabel": "Maandelijkse rente-opbrengst grafiek",
     "mixedCurrencies": "Totalen niet beschikbaar bij gemengde valuta's"
   },

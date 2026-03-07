@@ -9,6 +9,7 @@ import type { CashFlow } from '../../models/CashFlow';
 import type { RateChange } from '../../models/RateChange';
 import { PayoutInterval, getIntervalLabel } from '../../enums/PayoutInterval';
 import { InterestType, getInterestTypeLabel } from '../../enums/InterestType';
+import type { Currency } from '../../enums/Currency';
 import { formatCurrency, formatDurationShort, formatDate, formatRate } from '../../utils/format';
 import { useCurrency } from '../../hooks/useCurrency';
 import CashFlowEditor from '../CashFlowEditor';
@@ -207,7 +208,7 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
           <tbody>
             {sorted.map((r) => {
               const isOpen = openId === r.id;
-              const cur = r.currency ?? globalCurrency;
+              const cur = (r.currency as Currency | undefined) ?? globalCurrency;
               return (
                 <Fragment key={r.id}>
                   <tr
