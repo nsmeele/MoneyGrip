@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router';
 import { ArrowLeftIcon, PencilIcon, XMarkIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
@@ -17,6 +18,7 @@ import { toMonthKey, todayISO, parseDate, addMonthsToISO, addDayISO } from '../.
 import { getMonthDays } from '../../utils/monthDays';
 import CashFlowEditor, { type AutoCashFlow } from '../../components/CashFlowEditor';
 import InfoPopover from '../../components/InfoPopover';
+import MonthNav from '../../components/MonthNav';
 import { expandCashFlows, getRecurringAutoEntries } from '../../models/CashFlow';
 import { calculateDailyInterest } from '../../utils/dailyInterest';
 import RateChangeEditor from '../../components/RateChangeEditor';
@@ -38,6 +40,42 @@ export default function AccountDetailPage() {
   const { openModal } = useModal();
 
   const account = results.find((r) => r.id === id);
+
+  const currentMonthKey = toMonthKey(todayISO());
+  const [editorMonthOffset, setEditorMonthOffset] = useState(0);
+
+  const editorMonthKey = useMemo(() => {
+    if (editorMonthOffset === 0) return currentMonthKey;
+    return toMonthKey(addMonthsToISO(`${currentMonthKey}-01`, editorMonthOffset));
+  }, [currentMonthKey, editorMonthOffset]);
+
+  const editorMonthBounds = useMemo(() => {
+    if (!account) return { min: '', max: '' };
+    const allDates: string[] = [];
+    for (const cf of account.cashFlows) {
+      allDates.push(cf.date);
+      if (cf.recurring?.endDate) allDates.push(cf.recurring.endDate);
+    }
+    for (const rc of account.rateChanges) allDates.push(rc.date);
+    if (account.startDate) allDates.push(account.startDate);
+    if (account.endDate) allDates.push(account.endDate);
+    if (!account.isOngoing && account.startDate) {
+      allDates.push(addMonthsToISO(account.startDate, account.durationMonths));
+    }
+
+    let min = currentMonthKey;
+    let max = currentMonthKey;
+    for (const d of allDates) {
+      const mk = toMonthKey(d);
+      if (mk < min) min = mk;
+      if (mk > max) max = mk;
+    }
+    return { min, max };
+  }, [account, currentMonthKey]);
+
+  const editorAtStart = editorMonthBounds.min !== '' && editorMonthKey <= editorMonthBounds.min;
+  const editorAtEnd = !account?.isOngoing && editorMonthBounds.max !== '' && editorMonthKey >= editorMonthBounds.max;
+  const editorIsCurrentMonth = editorMonthOffset === 0;
 
   function handleEdit() {
     if (!account) return;
@@ -111,12 +149,9 @@ export default function AccountDetailPage() {
   }
   properties.push({ label: t('accounts.interestThisMonth'), value: formatCurrency(account.interestThisMonth, cur), info: t('accounts.interestThisMonthInfo'), infoOnLabel: true });
 
-  const currentMonthKey = toMonthKey(todayISO());
-  const prevMonthKey = toMonthKey(addMonthsToISO(`${currentMonthKey}-01`, -1));
-  const nextMonthKey = toMonthKey(addMonthsToISO(`${currentMonthKey}-01`, 1));
   const inWindow = (date: string) => {
     const mk = toMonthKey(date);
-    return mk === prevMonthKey || mk === currentMonthKey || mk === nextMonthKey;
+    return mk === editorMonthKey;
   };
 
   const compoundPayouts: AutoCashFlow[] = account.interestType === InterestType.Compound
@@ -126,7 +161,9 @@ export default function AccountDetailPage() {
         .filter((p) => inWindow(p.date))
     : [];
 
-  const endISO = account.endDate ?? (account.startDate ? addMonthsToISO(account.startDate, account.durationMonths) : '');
+  const accountEndISO = account.endDate ?? (account.startDate ? addMonthsToISO(account.startDate, account.durationMonths) : '');
+  const selectedMonthEnd = addMonthsToISO(`${editorMonthKey}-01`, 1);
+  const endISO = accountEndISO && accountEndISO > selectedMonthEnd ? accountEndISO : selectedMonthEnd;
   const recurringAutoEntries = getRecurringAutoEntries(account.cashFlows, endISO, inWindow);
 
   const autoEntries = [...compoundPayouts, ...recurringAutoEntries];
@@ -268,31 +305,43 @@ export default function AccountDetailPage() {
 
           {(account.hasCashFlows || account.isVariableRate) && (
             <section className="detail-editors">
-              {account.hasCashFlows && (
-                <CashFlowEditor
-                  cashFlows={account.cashFlows}
-                  onUpdate={(cfs) => handleUpdateCashFlows(account.id, cfs)}
-                  currency={cur}
-                  autoEntries={autoEntries}
-                  getProjectedBalance={account.startDate ? getProjectedBalance : undefined}
-                  balances={entryBalances}
-                />
-              )}
-              {account.isVariableRate && (
-                <RateChangeEditor
-                  rateChanges={account.rateChanges}
-                  currency={cur}
-                  onUpdate={(rcs) => handleUpdateRateChanges(account.id, rcs)}
-                />
-              )}
+              <MonthNav
+                selectedMonthKey={editorMonthKey}
+                isCurrentMonth={editorIsCurrentMonth}
+                disablePrev={editorAtStart}
+                disableNext={editorAtEnd}
+                onPrev={() => setEditorMonthOffset((o) => o - 1)}
+                onNext={() => setEditorMonthOffset((o) => o + 1)}
+                onReset={() => setEditorMonthOffset(0)}
+              />
+              <div className="detail-editors__panels">
+                {account.hasCashFlows && (
+                  <CashFlowEditor
+                    cashFlows={account.cashFlows}
+                    onUpdate={(cfs) => handleUpdateCashFlows(account.id, cfs)}
+                    currency={cur}
+                    autoEntries={autoEntries}
+                    getProjectedBalance={account.startDate ? getProjectedBalance : undefined}
+                    balances={entryBalances}
+                    selectedMonth={editorMonthKey}
+                  />
+                )}
+                {account.isVariableRate && (
+                  <RateChangeEditor
+                    rateChanges={account.rateChanges}
+                    currency={cur}
+                    onUpdate={(rcs) => handleUpdateRateChanges(account.id, rcs)}
+                    selectedMonth={editorMonthKey}
+                  />
+                )}
+              </div>
             </section>
           )}
 
           <AccountBalanceChart account={account} currency={cur} />
 
           {account.startDate && (() => {
-            const monthKey = toMonthKey(todayISO());
-            const days = getMonthDays(account, monthKey);
+            const days = getMonthDays(account, currentMonthKey);
             if (days.length === 0) return null;
             return (
               <details className="detail-month-breakdown" aria-label={t('detail.monthBreakdownLabel')}>

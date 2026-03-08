@@ -268,9 +268,13 @@ details[open] > .detail-collapsible__summary .detail-collapsible__icon {
 
 /* ─── Editors Section ─── */
 .detail-editors {
-  @apply flex flex-col gap-4 mb-6 p-4 rounded-2xl bg-white border border-navy-200/60 shadow-sm dark:bg-navy-900 dark:border-navy-700/50 dark:shadow-none sm:flex-row sm:gap-6 sm:p-6 sm:mb-8;
+  @apply mb-6 p-4 rounded-2xl bg-white border border-navy-200/60 shadow-sm dark:bg-navy-900 dark:border-navy-700/50 dark:shadow-none sm:p-6 sm:mb-8;
 }
 
-.detail-editors > * {
+.detail-editors__panels {
+  @apply flex flex-col gap-4 sm:flex-row sm:gap-6;
+}
+
+.detail-editors__panels > * {
   @apply sm:flex-1 sm:min-w-0;
 }

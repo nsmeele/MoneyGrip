@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PlusIcon, XMarkIcon, PencilIcon } from '@heroicons/react/24/outline';
 import type { RateChange } from '../../models/RateChange';
 import { formatDate, formatRate } from '../../utils/format';
+import { toMonthKey } from '../../utils/date';
 import type { Currency } from '../../enums/Currency';
 import { INITIAL_FORM, rateChangeToFormState } from './rateChangeFormState';
 import type { FormMode } from '../../types/FormMode';
@@ -12,9 +13,10 @@ interface RateChangeEditorProps {
   rateChanges: RateChange[];
   currency: Currency;
   onUpdate: (rateChanges: RateChange[]) => void;
+  selectedMonth?: string;
 }
 
-export default function RateChangeEditor({ rateChanges, currency, onUpdate }: RateChangeEditorProps) {
+export default function RateChangeEditor({ rateChanges, currency, onUpdate, selectedMonth }: RateChangeEditorProps) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<FormMode>({ status: 'idle' });
   const [form, setForm] = useState(INITIAL_FORM);
@@ -58,7 +60,9 @@ export default function RateChangeEditor({ rateChanges, currency, onUpdate }: Ra
     onUpdate(rateChanges.filter((rc) => rc.id !== id));
   }
 
-  const sorted = [...rateChanges].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = [...rateChanges]
+    .filter((rc) => !selectedMonth || toMonthKey(rc.date) === selectedMonth)
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <div className="rate-change-editor">

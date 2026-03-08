@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PlusIcon, XMarkIcon, PencilIcon } from '@heroicons/react/24/outline';
 import type { CashFlow } from '../../models/CashFlow';
 import { formatCurrency, formatDate } from '../../utils/format';
+import { toMonthKey } from '../../utils/date';
 import { CURRENCY_SYMBOLS, type Currency } from '../../enums/Currency';
 import { INITIAL_FORM, cashFlowToFormState } from './cashFlowFormState';
 import type { FormMode } from '../../types/FormMode';
@@ -21,9 +22,10 @@ interface CashFlowEditorProps {
   autoEntries?: AutoCashFlow[];
   getProjectedBalance?: (date: string) => number;
   balances?: Map<string, number>;
+  selectedMonth?: string;
 }
 
-export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntries = [], getProjectedBalance, balances }: CashFlowEditorProps) {
+export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntries = [], getProjectedBalance, balances, selectedMonth }: CashFlowEditorProps) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<FormMode>({ status: 'idle' });
   const [form, setForm] = useState(INITIAL_FORM);
@@ -91,7 +93,11 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
   const allEntries: DisplayEntry[] = [
     ...cashFlows.map((cf): DisplayEntry => ({ type: 'manual', cf })),
     ...autoEntries.map((entry): DisplayEntry => ({ type: 'auto', entry })),
-  ].sort((a, b) => {
+  ].filter((entry) => {
+    if (!selectedMonth) return true;
+    const date = entry.type === 'manual' ? entry.cf.date : entry.entry.date;
+    return toMonthKey(date) === selectedMonth;
+  }).sort((a, b) => {
     const dateA = a.type === 'manual' ? a.cf.date : a.entry.date;
     const dateB = b.type === 'manual' ? b.cf.date : b.entry.date;
     return dateB.localeCompare(dateA);

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, StarIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ChevronDownIcon, StarIcon } from '@heroicons/react/24/outline';
 import type { BankAccount } from '../../models/BankAccount';
 import { getIntervalLabel } from '../../enums/PayoutInterval';
 import { formatCurrency, formatAccountLabel, formatRate } from '../../utils/format';
@@ -8,8 +8,7 @@ import { useLocale } from '../../context/useLocale';
 import type { Currency } from '../../enums/Currency';
 import { toMonthKey, addMonthsToISO, todayISO, getNextMonthStart, endOfMonthISO, parseDate } from '../../utils/date';
 import { getMonthDays } from '../../utils/monthDays';
-import { LOCALE_MAP } from '../../i18n';
-import type { SupportedLanguage } from '../../i18n';
+import MonthNav from '../MonthNav';
 import PortfolioChart from '../PortfolioChart';
 import './PortfolioSummary.css';
 
@@ -22,7 +21,7 @@ interface PortfolioSummaryProps {
 }
 
 export default function PortfolioSummary({ results, portfolioIds, onToggle }: PortfolioSummaryProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { currency: globalCurrency } = useLocale();
   const items = results.filter((r) => portfolioIds.has(r.id));
   const hasMixedCurrencies = new Set(items.map((r) => r.currency ?? globalCurrency)).size > 1;
@@ -32,14 +31,6 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
   const [viewMode, setViewMode] = useState<'accrued' | 'disbursed'>('accrued');
   const [showInactive, setShowInactive] = useState(false);
   const [showZeroInterest, setShowZeroInterest] = useState(false);
-
-  const locale = LOCALE_MAP[i18n.language as SupportedLanguage] ?? 'nl-NL';
-
-  function formatMonthLabel(monthKey: string): string {
-    const [year, month] = monthKey.split('-').map(Number);
-    const d = new Date(year, month - 1, 1);
-    return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(d);
-  }
 
   const selectedMonthKey = useMemo(() => {
     if (monthOffset === 0) return currentMonthKey;
@@ -113,31 +104,15 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
         </div>
       </div>
 
-      <div className="month-nav">
-        <button
-          className="month-nav__btn"
-          onClick={() => setMonthOffset((o) => o - 1)}
-          disabled={atStart}
-          aria-label={t('portfolio.prevMonth')}
-        >
-          <ChevronLeftIcon aria-hidden="true" />
-        </button>
-        <div className="month-nav__label">
-          <span className="portfolio-stat-label">{formatMonthLabel(selectedMonthKey)}</span>
-          {isCurrentMonth
-            ? <span className="month-nav__current">{t('portfolio.now')}</span>
-            : <button className="btn-action month-nav__reset" onClick={() => setMonthOffset(0)} aria-label={t('portfolio.backToCurrent')}>{t('portfolio.now')}</button>
-          }
-        </div>
-        <button
-          className="month-nav__btn"
-          onClick={() => setMonthOffset((o) => o + 1)}
-          disabled={atEnd}
-          aria-label={t('portfolio.nextMonth')}
-        >
-          <ChevronRightIcon aria-hidden="true" />
-        </button>
-      </div>
+      <MonthNav
+        selectedMonthKey={selectedMonthKey}
+        isCurrentMonth={isCurrentMonth}
+        disablePrev={atStart}
+        disableNext={atEnd}
+        onPrev={() => setMonthOffset((o) => o - 1)}
+        onNext={() => setMonthOffset((o) => o + 1)}
+        onReset={() => setMonthOffset(0)}
+      />
 
       <nav className="portfolio-tabs" aria-label={t('portfolio.viewLabel')}>
         <button

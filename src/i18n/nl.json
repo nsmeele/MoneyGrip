@@ -159,10 +159,6 @@
   "portfolio": {
     "title": "Portefeuille",
     "emptyHint": "Voeg rekeningen toe aan je portefeuille via de ster ★ bij elke rekening.",
-    "prevMonth": "Vorige maand",
-    "nextMonth": "Volgende maand",
-    "now": "nu",
-    "backToCurrent": "Terug naar huidige maand",
     "viewLabel": "Weergave",
     "accrued": "Opgebouwd",
     "disbursed": "Uitbetaald",
@@ -256,6 +252,12 @@
     "ariaLabel": "Valuta selecteren",
     "label": "Valuta",
     "defaultOption": "Standaard ({{code}})"
+  },
+  "monthNav": {
+    "prevMonth": "Vorige maand",
+    "nextMonth": "Volgende maand",
+    "now": "nu",
+    "backToCurrent": "Terug naar huidige maand"
   },
   "detail": {
     "backToOverview": "Terug naar overzicht",

@@ -159,10 +159,6 @@
   "portfolio": {
     "title": "Portfolio",
     "emptyHint": "Add accounts to your portfolio using the star ★ on each account.",
-    "prevMonth": "Previous month",
-    "nextMonth": "Next month",
-    "now": "now",
-    "backToCurrent": "Back to current month",
     "viewLabel": "View",
     "accrued": "Accrued",
     "disbursed": "Disbursed",
@@ -256,6 +252,12 @@
     "ariaLabel": "Select currency",
     "label": "Currency",
     "defaultOption": "Default ({{code}})"
+  },
+  "monthNav": {
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "now": "now",
+    "backToCurrent": "Back to current month"
   },
   "detail": {
     "backToOverview": "Back to overview",

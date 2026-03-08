@@ -34,31 +34,6 @@
   content: '';
 }
 
-/* ─── Month Navigation ─── */
-.month-nav {
-  @apply flex items-center justify-center gap-3 py-2 mb-3 rounded-lg bg-navy-50/60 dark:bg-navy-800/40;
-}
-
-.month-nav__btn {
-  @apply inline-flex items-center justify-center w-9 h-9 p-0 text-base bg-transparent border-none rounded-lg cursor-pointer text-navy-500 transition-all duration-200 hover:text-copper-600 hover:bg-copper-100/60 active:scale-90 disabled:opacity-20 disabled:cursor-default disabled:hover:bg-transparent disabled:hover:text-navy-400 dark:text-navy-400 dark:hover:text-copper-400 dark:hover:bg-copper-500/15;
-}
-
-.month-nav__label {
-  @apply flex items-center gap-2 min-w-44 justify-center;
-}
-
-.month-nav__label .portfolio-stat-label {
-  @apply mb-0 capitalize text-sm text-navy-800 dark:text-navy-100;
-}
-
-.month-nav__current {
-  @apply text-3xs font-bold uppercase tracking-wide text-copper-500 bg-copper-100 rounded-full px-1.5 py-px dark:text-copper-400 dark:bg-copper-500/15;
-}
-
-.month-nav__reset {
-  @apply text-2xs py-1 px-2.5 rounded-md;
-}
-
 .portfolio-stat-label {
   @apply font-semibold text-navy-500 uppercase mb-1 text-xs tracking-[0.07em] dark:text-navy-400;
 }
