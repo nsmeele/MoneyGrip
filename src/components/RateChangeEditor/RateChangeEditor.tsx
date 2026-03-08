@@ -12,29 +12,36 @@ interface RateChangeEditorProps {
   onUpdate: (rateChanges: RateChange[]) => void;
 }
 
+const INITIAL_FORM = { date: '', rate: '', errors: {} as Record<string, string> };
+
 export default function RateChangeEditor({ rateChanges, currency, onUpdate }: RateChangeEditorProps) {
   const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
-  const [date, setDate] = useState('');
-  const [rate, setRate] = useState('');
+  const [form, setForm] = useState(INITIAL_FORM);
 
-  function resetForm() {
-    setDate('');
-    setRate('');
+  function updateField(field: string, value: string) {
+    setForm((prev) => {
+      const { [field]: _, ...restErrors } = prev.errors;
+      return { ...prev, [field]: value, errors: restErrors };
+    });
   }
 
-  function handleAdd() {
-    const parsedRate = parseFloat(rate.replace(',', '.'));
-    if (!date || isNaN(parsedRate) || parsedRate < 0) return;
+  function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    const errors: Record<string, string> = {};
+    if (!form.date) errors.date = t('rateChange.errorDate');
+    const parsedRate = parseFloat(form.rate.replace(',', '.'));
+    if (!form.rate || isNaN(parsedRate) || parsedRate < 0) errors.rate = t('rateChange.errorRate');
+    if (Object.keys(errors).length > 0) { setForm((prev) => ({ ...prev, errors })); return; }
 
     const newRateChange: RateChange = {
       id: crypto.randomUUID(),
-      date,
+      date: form.date,
       annualInterestRate: parsedRate,
     };
 
     onUpdate([...rateChanges, newRateChange].sort((a, b) => a.date.localeCompare(b.date)));
-    resetForm();
+    setForm(INITIAL_FORM);
     setIsAdding(false);
   }
 
@@ -50,24 +57,25 @@ export default function RateChangeEditor({ rateChanges, currency, onUpdate }: Ra
         <h3>{t('rateChange.title')}</h3>
         <button
           className={`rate-change-editor__add-btn${isAdding ? ' rate-change-editor__add-btn--active' : ''}`}
-          onClick={() => { setIsAdding(!isAdding); if (isAdding) resetForm(); }}
+          onClick={() => { setIsAdding(!isAdding); if (isAdding) setForm(INITIAL_FORM); }}
         >
           {isAdding ? t('rateChange.cancel') : <><PlusIcon aria-hidden="true" /> {t('rateChange.add')}</>}
         </button>
       </div>
 
       {isAdding && (
-        <div className="rate-change-editor__form">
+        <form className="rate-change-editor__form" onSubmit={handleAdd}>
           <div className="rate-change-editor__fields">
             <div>
               <label className="form-label" htmlFor="rc-date">{t('rateChange.effectiveDate')}</label>
               <input
                 id="rc-date"
                 type="date"
-                className="form-input"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                className={`form-input${form.errors.date ? ' form-input--error' : ''}`}
+                value={form.date}
+                onChange={(e) => updateField('date', e.target.value)}
               />
+              {form.errors.date && <span className="form-error">{form.errors.date}</span>}
             </div>
             <div>
               <label className="form-label" htmlFor="rc-rate">{t('rateChange.newRate')}</label>
@@ -76,26 +84,26 @@ export default function RateChangeEditor({ rateChanges, currency, onUpdate }: Ra
                   id="rc-rate"
                   type="text"
                   inputMode="decimal"
-                  className="form-input"
-                  value={rate}
-                  onChange={(e) => setRate(e.target.value)}
+                  className={`form-input${form.errors.rate ? ' form-input--error' : ''}`}
+                  value={form.rate}
+                  onChange={(e) => updateField('rate', e.target.value)}
                   placeholder="3,5"
                 />
                 <span className="suffix">%</span>
               </div>
+              {form.errors.rate && <span className="form-error">{form.errors.rate}</span>}
             </div>
           </div>
 
           <div className="rate-change-editor__actions">
             <button
-              type="button"
+              type="submit"
               className="rate-change-editor__submit"
-              onClick={handleAdd}
             >
               {t('rateChange.add')}
             </button>
           </div>
-        </div>
+        </form>
       )}
 
       {sorted.length === 0 && !isAdding && (

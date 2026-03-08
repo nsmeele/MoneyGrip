@@ -144,7 +144,9 @@
     "newRate": "New interest rate",
     "empty": "No rate changes yet",
     "delete": "Delete",
-    "deleteRateChange": "Delete rate change {{date}}"
+    "deleteRateChange": "Delete rate change {{date}}",
+    "errorDate": "Select an effective date",
+    "errorRate": "Enter a valid interest rate"
   },
   "portfolio": {
     "title": "Portfolio",

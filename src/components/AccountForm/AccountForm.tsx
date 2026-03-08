@@ -28,100 +28,140 @@ const interestTypes = Object.values(InterestType);
 const dayCountOptions = Object.values(DayCountConvention);
 const accountTypes = Object.values(AccountType);
 
+interface FormState {
+  accountCurrency: Currency | '';
+  startAmount: string;
+  interestRate: string;
+  years: string;
+  months: string;
+  interval: PayoutInterval;
+  interestType: InterestType;
+  startDate: string;
+  endDate: string;
+  isOngoing: boolean;
+  dayCount: DayCountConvention;
+  isVariableRate: boolean;
+  hasCashFlows: boolean;
+  useCustomEndDate: boolean;
+  accountType: AccountType | '';
+  errors: Record<string, string>;
+}
+
+function createInitialForm(globalCurrency: Currency): FormState {
+  return {
+    accountCurrency: '',
+    startAmount: formatAmountInput(10000, globalCurrency),
+    interestRate: '3.5',
+    years: '5',
+    months: '0',
+    interval: PayoutInterval.Monthly,
+    interestType: InterestType.Compound,
+    startDate: '',
+    endDate: '',
+    isOngoing: true,
+    dayCount: DayCountConvention.NOM_12,
+    isVariableRate: true,
+    hasCashFlows: true,
+    useCustomEndDate: false,
+    accountType: AccountType.Savings,
+    errors: {},
+  };
+}
+
 export default function AccountForm({ onResult, editingResult, onCancelEdit }: AccountFormProps) {
   const { t } = useTranslation();
   const { currency: globalCurrency } = useLocale();
-  const [accountCurrency, setAccountCurrency] = useState<Currency | ''>('');
-  const activeCurrency = accountCurrency || globalCurrency;
-  const [startAmount, setStartAmount] = useState(formatAmountInput(10000, globalCurrency));
-  const [interestRate, setInterestRate] = useState('3.5');
-  const [years, setYears] = useState('5');
-  const [months, setMonths] = useState('0');
-  const [interval, setInterval] = useState<PayoutInterval>(PayoutInterval.Monthly);
-  const [interestType, setInterestType] = useState<InterestType>(InterestType.Compound);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [isOngoing, setIsOngoing] = useState(true);
-  const [dayCount, setDayCount] = useState<DayCountConvention>(DayCountConvention.NOM_12);
-  const [isVariableRate, setIsVariableRate] = useState(true);
-  const [hasCashFlows, setHasCashFlows] = useState(true);
-  const [useCustomEndDate, setUseCustomEndDate] = useState(false);
-  const [accountType, setAccountType] = useState<AccountType | ''>(AccountType.Savings);
+  const [form, setForm] = useState(() => createInitialForm(globalCurrency));
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const activeCurrency = form.accountCurrency || globalCurrency;
+
+  function updateForm(patch: Partial<FormState>) {
+    setForm((prev) => ({ ...prev, ...patch }));
+  }
+
+  function clearError(key: string) {
+    setForm((prev) => {
+      const { [key]: _, ...rest } = prev.errors;
+      return { ...prev, errors: rest };
+    });
+  }
 
   const prevEditingId = useState<string | null>(null);
   if (editingResult && editingResult.id !== prevEditingId[0]) {
     prevEditingId[1](editingResult.id);
-    setStartAmount(formatAmountInput(editingResult.startAmount, (editingResult.currency as Currency) || globalCurrency));
-    setInterestRate(editingResult.annualInterestRate.toString());
-    setYears(Math.floor(editingResult.durationMonths / 12).toString());
-    setMonths((editingResult.durationMonths % 12).toString());
-    setInterval(editingResult.interval);
-    setInterestType(editingResult.interestType);
-    setStartDate(editingResult.startDate ?? '');
-    setEndDate(editingResult.endDate ?? '');
-    setUseCustomEndDate(!!editingResult.endDate);
-    setIsOngoing(editingResult.isOngoing);
-    setDayCount(editingResult.dayCount);
-    setIsVariableRate(editingResult.isVariableRate);
-    setHasCashFlows(editingResult.hasCashFlows);
-    setAccountCurrency((editingResult.currency as Currency) ?? '');
-    setAccountType(editingResult.accountType ?? '');
+    setForm({
+      startAmount: formatAmountInput(editingResult.startAmount, (editingResult.currency as Currency) || globalCurrency),
+      interestRate: editingResult.annualInterestRate.toString(),
+      years: Math.floor(editingResult.durationMonths / 12).toString(),
+      months: (editingResult.durationMonths % 12).toString(),
+      interval: editingResult.interval,
+      interestType: editingResult.interestType,
+      startDate: editingResult.startDate ?? '',
+      endDate: editingResult.endDate ?? '',
+      useCustomEndDate: !!editingResult.endDate,
+      isOngoing: editingResult.isOngoing,
+      dayCount: editingResult.dayCount,
+      isVariableRate: editingResult.isVariableRate,
+      hasCashFlows: editingResult.hasCashFlows,
+      accountCurrency: (editingResult.currency as Currency) ?? '',
+      accountType: editingResult.accountType ?? '',
+      errors: {},
+    });
   }
   if (!editingResult && prevEditingId[0] !== null) {
     prevEditingId[1](null);
   }
 
-  const restrictions = accountType ? ACCOUNT_RESTRICTIONS[accountType] : null;
-  const isDeposit = accountType === AccountType.Deposit;
-  const isAdvancedVisible = showAdvanced || !accountType;
+  const restrictions = form.accountType ? ACCOUNT_RESTRICTIONS[form.accountType] : null;
+  const isDeposit = form.accountType === AccountType.Deposit;
+  const isAdvancedVisible = showAdvanced || !form.accountType;
 
-  const durationFromDates = useCustomEndDate && startDate && endDate ? monthsBetween(startDate, endDate) : null;
+  const durationFromDates = form.useCustomEndDate && form.startDate && form.endDate ? monthsBetween(form.startDate, form.endDate) : null;
   const hasDurationFromDates = durationFromDates !== null && durationFromDates > 0;
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const clearError = (key: string) => setErrors((p) => { const { [key]: _, ...rest } = p; return rest; });
 
   function applyPreset(type: AccountType) {
     const preset = ACCOUNT_PRESETS[type];
-    setAccountType(type);
-    setInterestType(preset.interestType);
-    setInterval(preset.interval);
-    setIsOngoing(preset.isOngoing);
-    setIsVariableRate(preset.isVariableRate);
-    setHasCashFlows(preset.hasCashFlows);
+    updateForm({
+      accountType: type,
+      interestType: preset.interestType,
+      interval: preset.interval,
+      isOngoing: preset.isOngoing,
+      isVariableRate: preset.isVariableRate,
+      hasCashFlows: preset.hasCashFlows,
+    });
   }
 
   function validate() {
     const next: Record<string, string> = {};
 
-    const amount = parseAmountInput(startAmount, activeCurrency);
-    if (!startAmount.trim() || isNaN(amount)) {
+    const amount = parseAmountInput(form.startAmount, activeCurrency);
+    if (!form.startAmount.trim() || isNaN(amount)) {
       next.startAmount = t('form.errorInvalidAmount');
     } else if (amount <= 0) {
       next.startAmount = t('form.errorAmountPositive');
     }
 
-    const rate = parseFloat(interestRate.replace(',', '.'));
-    if (!interestRate.trim() || isNaN(rate)) {
+    const rate = parseFloat(form.interestRate.replace(',', '.'));
+    if (!form.interestRate.trim() || isNaN(rate)) {
       next.interestRate = t('form.errorInvalidRate');
     } else if (rate < 0) {
       next.interestRate = t('form.errorRateNegative');
     }
 
-    if (isDeposit && !startDate) {
+    if (isDeposit && !form.startDate) {
       next.startDate = t('form.errorStartDateRequired');
-    } else if (isOngoing) {
-      if (!startDate) {
+    } else if (form.isOngoing) {
+      if (!form.startDate) {
         next.startDate = t('form.errorStartDateRequired');
       }
-    } else if (useCustomEndDate && endDate && !startDate) {
+    } else if (form.useCustomEndDate && form.endDate && !form.startDate) {
       next.endDate = t('form.errorStartDateMissing');
-    } else if (useCustomEndDate && durationFromDates !== null && durationFromDates <= 0) {
+    } else if (form.useCustomEndDate && durationFromDates !== null && durationFromDates <= 0) {
       next.endDate = t('form.errorEndDateBeforeStart');
     } else if (!hasDurationFromDates) {
-      const y = parseInt(years || '0');
-      const m = parseInt(months || '0');
+      const y = parseInt(form.years || '0');
+      const m = parseInt(form.months || '0');
       if (isNaN(y) || isNaN(m) || y * 12 + m <= 0) {
         next.duration = t('form.errorMinDuration');
       }
@@ -134,18 +174,93 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
     e.preventDefault();
 
     const validationErrors = validate();
-    setErrors(validationErrors);
+    updateForm({ errors: validationErrors });
     if (Object.keys(validationErrors).length > 0) return;
 
-    const amount = parseAmountInput(startAmount, activeCurrency);
-    const rate = parseFloat(interestRate.replace(',', '.'));
-    const durationMonths = isOngoing
-      ? Math.max(1, Math.ceil(daysBetween(startDate, endOfMonthISO(todayISO())) / 30.44) + 12)
-      : hasDurationFromDates ? durationFromDates : parseInt(years) * 12 + parseInt(months || '0');
+    const amount = parseAmountInput(form.startAmount, activeCurrency);
+    const rate = parseFloat(form.interestRate.replace(',', '.'));
+    const durationMonths = form.isOngoing
+      ? Math.max(1, Math.ceil(daysBetween(form.startDate, endOfMonthISO(todayISO())) / 30.44) + 12)
+      : hasDurationFromDates ? durationFromDates : parseInt(form.years) * 12 + parseInt(form.months || '0');
 
-    const input = new BankAccountInput(amount, rate, durationMonths, interval, interestType, startDate || undefined, hasCashFlows ? (editingResult?.cashFlows ?? []) : [], isOngoing, dayCount, isVariableRate ? (editingResult?.rateChanges ?? []) : [], isVariableRate, accountCurrency || undefined, accountType || undefined, hasCashFlows);
+    const input = new BankAccountInput(amount, rate, durationMonths, form.interval, form.interestType, form.startDate || undefined, form.hasCashFlows ? (editingResult?.cashFlows ?? []) : [], form.isOngoing, form.dayCount, form.isVariableRate ? (editingResult?.rateChanges ?? []) : [], form.isVariableRate, form.accountCurrency || undefined, form.accountType || undefined, form.hasCashFlows);
     const result = calculator.calculate(input);
     onResult(result);
+  }
+
+  function renderDurationFields() {
+    return (
+      <>
+        {!form.isOngoing && !form.useCustomEndDate && (
+          <div className="form-group">
+            <label className="form-label">{t('form.duration')}</label>
+            <div className="form-row">
+              <div className="form-input-suffix">
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  className={`form-input${form.errors.duration ? ' form-input--error' : ''}`}
+                  value={form.years}
+                  onChange={(e) => { updateForm({ years: e.target.value }); clearError('duration'); }}
+                  placeholder="5"
+                />
+                <span className="suffix">{t('form.yearsSuffix')}</span>
+              </div>
+              <div className="form-input-suffix">
+                <input
+                  type="number"
+                  min="0"
+                  max="11"
+                  className={`form-input${form.errors.duration ? ' form-input--error' : ''}`}
+                  value={form.months}
+                  onChange={(e) => { updateForm({ months: e.target.value }); clearError('duration'); }}
+                  placeholder="0"
+                />
+                <span className="suffix">{t('form.monthsSuffix')}</span>
+              </div>
+            </div>
+            {form.errors.duration && <span className="form-error">{form.errors.duration}</span>}
+          </div>
+        )}
+
+        {!form.isOngoing && (
+          <div className="form-group">
+            <div className="form-checkbox">
+              <input
+                type="checkbox"
+                id="useCustomEndDate"
+                checked={form.useCustomEndDate}
+                onChange={(e) => {
+                  updateForm({ useCustomEndDate: e.target.checked, ...(!e.target.checked ? { endDate: '' } : {}) });
+                  if (!e.target.checked) clearError('endDate');
+                }}
+              />
+              <label htmlFor="useCustomEndDate">{t('form.useCustomEndDate')}</label>
+            </div>
+          </div>
+        )}
+
+        {!form.isOngoing && form.useCustomEndDate && (
+          <div className="form-group">
+            <label className="form-label" htmlFor="endDate">
+              {t('form.endDate')}
+              {hasDurationFromDates && (
+                <span className="form-hint">{t('form.durationAuto')}</span>
+              )}
+            </label>
+            <input
+              id="endDate"
+              type="date"
+              className={`form-input${form.errors.endDate ? ' form-input--error' : ''}`}
+              value={form.endDate}
+              onChange={(e) => { updateForm({ endDate: e.target.value }); clearError('endDate'); }}
+            />
+            {form.errors.endDate && <span className="form-error">{form.errors.endDate}</span>}
+          </div>
+        )}
+      </>
+    );
   }
 
   return (
@@ -153,128 +268,44 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
             <div className="form-group">
               <label className="form-label" htmlFor="startAmount">{t('form.deposit')}</label>
               <div className="form-input-prefix">
-                <span className="prefix">{CURRENCY_SYMBOLS[accountCurrency || globalCurrency]}</span>
+                <span className="prefix">{CURRENCY_SYMBOLS[form.accountCurrency || globalCurrency]}</span>
                 <input
                   id="startAmount"
                   type="text"
                   inputMode="decimal"
-                  className={`form-input${errors.startAmount ? ' form-input--error' : ''}`}
-                  value={startAmount}
+                  className={`form-input${form.errors.startAmount ? ' form-input--error' : ''}`}
+                  value={form.startAmount}
                   onChange={(e) => {
-                    setStartAmount(e.target.value);
+                    updateForm({ startAmount: e.target.value });
                     clearError('startAmount');
                   }}
                   onBlur={() => {
-                    const parsed = parseAmountInput(startAmount, activeCurrency);
+                    const parsed = parseAmountInput(form.startAmount, activeCurrency);
                     if (!isNaN(parsed) && parsed > 0) {
-                      setStartAmount(formatAmountInput(startAmount, activeCurrency));
+                      updateForm({ startAmount: formatAmountInput(form.startAmount, activeCurrency) });
                     } else {
-                      setStartAmount('');
-                      setErrors((p) => ({...p, startAmount: t('form.errorInvalidAmount')}));
+                      updateForm({ startAmount: '', errors: { ...form.errors, startAmount: t('form.errorInvalidAmount') } });
                     }
                   }}
                   placeholder="10.000"
                 />
               </div>
-              {errors.startAmount && <span className="form-error">{errors.startAmount}</span>}
+              {form.errors.startAmount && <span className="form-error">{form.errors.startAmount}</span>}
             </div>
 
             <div className="form-group">
               <label className="form-label" htmlFor="startDate">
-                {t('form.startDate')} {isOngoing ? '' : t('form.optional')}
+                {t('form.startDate')} {form.isOngoing ? '' : t('form.optional')}
               </label>
               <input
                 id="startDate"
                 type="date"
-                className={`form-input${errors.startDate ? ' form-input--error' : ''}`}
-                value={startDate}
-                onChange={(e) => { setStartDate(e.target.value); clearError('startDate'); }}
+                className={`form-input${form.errors.startDate ? ' form-input--error' : ''}`}
+                value={form.startDate}
+                onChange={(e) => { updateForm({ startDate: e.target.value }); clearError('startDate'); }}
               />
-              {errors.startDate && <span className="form-error">{errors.startDate}</span>}
+              {form.errors.startDate && <span className="form-error">{form.errors.startDate}</span>}
             </div>
-
-            {!isDeposit && (
-              <div className="form-group">
-                <div className="form-checkbox">
-                  <input
-                    type="checkbox"
-                    id="isOngoing"
-                    checked={isOngoing}
-                    onChange={(e) => setIsOngoing(e.target.checked)}
-                  />
-                  <label htmlFor="isOngoing">{t('form.ongoingAccount')}</label>
-                </div>
-              </div>
-            )}
-
-            {!isOngoing && !useCustomEndDate && (
-              <div className="form-group">
-                <label className="form-label">{t('form.duration')}</label>
-                <div className="form-row">
-                  <div className="form-input-suffix">
-                    <input
-                      type="number"
-                      min="0"
-                      max="50"
-                      className={`form-input${errors.duration ? ' form-input--error' : ''}`}
-                      value={years}
-                      onChange={(e) => { setYears(e.target.value); clearError('duration'); }}
-                      placeholder="5"
-                    />
-                    <span className="suffix">{t('form.yearsSuffix')}</span>
-                  </div>
-                  <div className="form-input-suffix">
-                    <input
-                      type="number"
-                      min="0"
-                      max="11"
-                      className={`form-input${errors.duration ? ' form-input--error' : ''}`}
-                      value={months}
-                      onChange={(e) => { setMonths(e.target.value); clearError('duration'); }}
-                      placeholder="0"
-                    />
-                    <span className="suffix">{t('form.monthsSuffix')}</span>
-                  </div>
-                </div>
-                {errors.duration && <span className="form-error">{errors.duration}</span>}
-              </div>
-            )}
-
-            {!isOngoing && (
-              <div className="form-group">
-                <div className="form-checkbox">
-                  <input
-                    type="checkbox"
-                    id="useCustomEndDate"
-                    checked={useCustomEndDate}
-                    onChange={(e) => {
-                      setUseCustomEndDate(e.target.checked);
-                      if (!e.target.checked) { setEndDate(''); clearError('endDate'); }
-                    }}
-                  />
-                  <label htmlFor="useCustomEndDate">{t('form.useCustomEndDate')}</label>
-                </div>
-              </div>
-            )}
-
-            {!isOngoing && useCustomEndDate && (
-              <div className="form-group">
-                <label className="form-label" htmlFor="endDate">
-                  {t('form.endDate')}
-                  {hasDurationFromDates && (
-                    <span className="form-hint">{t('form.durationAuto')}</span>
-                  )}
-                </label>
-                <input
-                  id="endDate"
-                  type="date"
-                  className={`form-input${errors.endDate ? ' form-input--error' : ''}`}
-                  value={endDate}
-                  onChange={(e) => { setEndDate(e.target.value); clearError('endDate'); }}
-                />
-                {errors.endDate && <span className="form-error">{errors.endDate}</span>}
-              </div>
-            )}
 
             <div className="form-group">
               <label className="form-label" htmlFor="interestRate">{t('form.annualRate')}</label>
@@ -283,14 +314,14 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                   id="interestRate"
                   type="text"
                   inputMode="decimal"
-                  className={`form-input${errors.interestRate ? ' form-input--error' : ''}`}
-                  value={interestRate}
-                  onChange={(e) => { setInterestRate(e.target.value); clearError('interestRate'); }}
+                  className={`form-input${form.errors.interestRate ? ' form-input--error' : ''}`}
+                  value={form.interestRate}
+                  onChange={(e) => { updateForm({ interestRate: e.target.value }); clearError('interestRate'); }}
                   placeholder="3,5"
                 />
                 <span className="suffix">%</span>
               </div>
-              {errors.interestRate && <span className="form-error">{errors.interestRate}</span>}
+              {form.errors.interestRate && <span className="form-error">{form.errors.interestRate}</span>}
             </div>
 
             <div className="form-group">
@@ -301,17 +332,19 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
               <select
                 id="accountType"
                 className="form-input"
-                value={accountType}
+                value={form.accountType}
                 onChange={(e) => {
                   const value = e.target.value as AccountType | '';
                   if (value) {
                     applyPreset(value);
                     setShowAdvanced(false);
                   } else {
-                    setAccountType('');
-                    setIsOngoing(true);
-                    setInterestType(InterestType.Compound);
-                    setInterval(PayoutInterval.Annually);
+                    updateForm({
+                      accountType: '',
+                      isOngoing: true,
+                      interestType: InterestType.Compound,
+                      interval: PayoutInterval.Annually,
+                    });
                     setShowAdvanced(true);
                   }
                 }}
@@ -323,7 +356,23 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
               </select>
             </div>
 
-            {accountType && (
+            {!isDeposit && (
+              <div className="form-group">
+                <div className="form-checkbox">
+                  <input
+                    type="checkbox"
+                    id="isOngoing"
+                    checked={form.isOngoing}
+                    onChange={(e) => updateForm({ isOngoing: e.target.checked })}
+                  />
+                  <label htmlFor="isOngoing">{t('form.ongoingAccount')}</label>
+                </div>
+              </div>
+            )}
+
+            {!form.isOngoing && renderDurationFields()}
+
+            {form.accountType && (
               <button
                 type="button"
                 className="advanced-toggle"
@@ -344,8 +393,8 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                       <input
                         type="checkbox"
                         id="isVariableRate"
-                        checked={isVariableRate}
-                        onChange={(e) => setIsVariableRate(e.target.checked)}
+                        checked={form.isVariableRate}
+                        onChange={(e) => updateForm({ isVariableRate: e.target.checked })}
                       />
                       <label htmlFor="isVariableRate">
                         {t('form.variableRate')}
@@ -361,8 +410,8 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                       <input
                         type="checkbox"
                         id="hasCashFlows"
-                        checked={hasCashFlows}
-                        onChange={(e) => setHasCashFlows(e.target.checked)}
+                        checked={form.hasCashFlows}
+                        onChange={(e) => updateForm({ hasCashFlows: e.target.checked })}
                       />
                       <label htmlFor="hasCashFlows">
                         {t('form.cashFlows')}
@@ -382,8 +431,8 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                           name="interestType"
                           id={`interest-type-${rt}`}
                           value={rt}
-                          checked={interestType === rt}
-                          onChange={() => setInterestType(rt)}
+                          checked={form.interestType === rt}
+                          onChange={() => updateForm({ interestType: rt })}
                         />
                         <label htmlFor={`interest-type-${rt}`}>
                           {getInterestTypeLabel(rt)}
@@ -406,8 +455,8 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                           name="interval"
                           id={`interval-${iv}`}
                           value={iv}
-                          checked={interval === iv}
-                          onChange={() => setInterval(iv)}
+                          checked={form.interval === iv}
+                          onChange={() => updateForm({ interval: iv })}
                         />
                         <label htmlFor={`interval-${iv}`}>
                           {getIntervalLabel(iv)}
@@ -430,8 +479,8 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                           name="dayCount"
                           id={`daycount-${dc}`}
                           value={dc}
-                          checked={dayCount === dc}
-                          onChange={() => setDayCount(dc)}
+                          checked={form.dayCount === dc}
+                          onChange={() => updateForm({ dayCount: dc })}
                         />
                         <label htmlFor={`daycount-${dc}`}>
                           {getDayCountLabel(dc)}
@@ -449,8 +498,8 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                   <select
                     id="accountCurrency"
                     className="form-input"
-                    value={accountCurrency}
-                    onChange={(e) => setAccountCurrency(e.target.value as Currency | '')}
+                    value={form.accountCurrency}
+                    onChange={(e) => updateForm({ accountCurrency: e.target.value as Currency | '' })}
                   >
                     <option value="">{t('currency.defaultOption', { code: globalCurrency })}</option>
                     {SUPPORTED_CURRENCIES.map((code) => (

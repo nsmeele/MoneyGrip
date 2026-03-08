@@ -144,7 +144,9 @@
     "newRate": "Nieuw rentepercentage",
     "empty": "Nog geen rentewijzigingen",
     "delete": "Verwijderen",
-    "deleteRateChange": "Verwijder rentewijziging {{date}}"
+    "deleteRateChange": "Verwijder rentewijziging {{date}}",
+    "errorDate": "Kies een ingangsdatum",
+    "errorRate": "Vul een geldig rentepercentage in"
   },
   "portfolio": {
     "title": "Portefeuille",

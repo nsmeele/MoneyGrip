@@ -19,15 +19,15 @@ interface CashFlowEditorProps {
   autoEntries?: AutoCashFlow[];
 }
 
+const INITIAL_FORM = {
+  isWithdrawal: false, date: '', amount: '', description: '',
+  isRecurring: false, intervalMonths: 1,
+};
+
 export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntries = [] }: CashFlowEditorProps) {
   const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
-  const [isWithdrawal, setIsWithdrawal] = useState(false);
-  const [date, setDate] = useState('');
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [intervalMonths, setIntervalMonths] = useState(1);
+  const [form, setForm] = useState(INITIAL_FORM);
 
   const recurringOptions = [
     { value: 1, label: t('cashflow.recurringMonthly') },
@@ -36,29 +36,20 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
     { value: 12, label: t('cashflow.recurringAnnually') },
   ];
 
-  function resetForm() {
-    setDate('');
-    setAmount('');
-    setDescription('');
-    setIsRecurring(false);
-    setIntervalMonths(1);
-    setIsWithdrawal(false);
-  }
-
   function handleAdd() {
-    const parsedAmount = parseFloat(amount.replace(',', '.'));
-    if (!date || isNaN(parsedAmount) || parsedAmount <= 0) return;
+    const parsedAmount = parseFloat(form.amount.replace(',', '.'));
+    if (!form.date || isNaN(parsedAmount) || parsedAmount <= 0) return;
 
     const newCashFlow: CashFlow = {
       id: crypto.randomUUID(),
-      date,
-      amount: isWithdrawal ? -parsedAmount : parsedAmount,
-      description: description || (isWithdrawal ? t('cashflow.withdrawalType') : t('cashflow.depositType')),
-      ...(isRecurring ? { recurring: { intervalMonths } } : {}),
+      date: form.date,
+      amount: form.isWithdrawal ? -parsedAmount : parsedAmount,
+      description: form.description || (form.isWithdrawal ? t('cashflow.withdrawalType') : t('cashflow.depositType')),
+      ...(form.isRecurring ? { recurring: { intervalMonths: form.intervalMonths } } : {}),
     };
 
     onUpdate([...cashFlows, newCashFlow].sort((a, b) => a.date.localeCompare(b.date)));
-    resetForm();
+    setForm(INITIAL_FORM);
     setIsAdding(false);
   }
 
@@ -85,7 +76,7 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
         <h3>{t('cashflow.title')}</h3>
         <button
           className={`cashflow-editor__add-btn${isAdding ? ' cashflow-editor__add-btn--active' : ''}`}
-          onClick={() => { setIsAdding(!isAdding); if (isAdding) resetForm(); }}
+          onClick={() => { setIsAdding(!isAdding); if (isAdding) setForm(INITIAL_FORM); }}
         >
           {isAdding ? t('cashflow.cancel') : <><PlusIcon aria-hidden="true" /> {t('cashflow.add')}</>}
         </button>
@@ -96,15 +87,15 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
           <div className="cashflow-editor__type-toggle">
             <button
               type="button"
-              className={`cashflow-type${!isWithdrawal ? ' cashflow-type--active cashflow-type--deposit' : ''}`}
-              onClick={() => setIsWithdrawal(false)}
+              className={`cashflow-type${!form.isWithdrawal ? ' cashflow-type--active cashflow-type--deposit' : ''}`}
+              onClick={() => setForm((prev) => ({ ...prev, isWithdrawal: false }))}
             >
               {t('cashflow.depositType')}
             </button>
             <button
               type="button"
-              className={`cashflow-type${isWithdrawal ? ' cashflow-type--active cashflow-type--withdrawal' : ''}`}
-              onClick={() => setIsWithdrawal(true)}
+              className={`cashflow-type${form.isWithdrawal ? ' cashflow-type--active cashflow-type--withdrawal' : ''}`}
+              onClick={() => setForm((prev) => ({ ...prev, isWithdrawal: true }))}
             >
               {t('cashflow.withdrawalType')}
             </button>
@@ -117,8 +108,8 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
                 id="cf-date"
                 type="date"
                 className="form-input"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                value={form.date}
+                onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
               />
             </div>
             <div>
@@ -130,8 +121,8 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
                   type="text"
                   inputMode="decimal"
                   className="form-input"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  value={form.amount}
+                  onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
                   placeholder="0,00"
                 />
               </div>
@@ -142,9 +133,9 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
                 id="cf-desc"
                 type="text"
                 className="form-input"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder={isWithdrawal ? t('cashflow.withdrawalType') : t('cashflow.depositType')}
+                value={form.description}
+                onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                placeholder={form.isWithdrawal ? t('cashflow.withdrawalType') : t('cashflow.depositType')}
               />
             </div>
           </div>
@@ -153,16 +144,16 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
             <label className="cashflow-editor__recurring-label">
               <input
                 type="checkbox"
-                checked={isRecurring}
-                onChange={(e) => setIsRecurring(e.target.checked)}
+                checked={form.isRecurring}
+                onChange={(e) => setForm((prev) => ({ ...prev, isRecurring: e.target.checked }))}
               />
               {t('cashflow.recurring')}
             </label>
-            {isRecurring && (
+            {form.isRecurring && (
               <select
                 className="cashflow-editor__recurring-select"
-                value={intervalMonths}
-                onChange={(e) => setIntervalMonths(Number(e.target.value))}
+                value={form.intervalMonths}
+                onChange={(e) => setForm((prev) => ({ ...prev, intervalMonths: Number(e.target.value) }))}
               >
                 {recurringOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
