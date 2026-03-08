@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import { PlusIcon, XMarkIcon, PencilIcon } from '@heroicons/react/24/outline';
 import type { CashFlow } from '../../models/CashFlow';
 import { formatCurrency, formatDate } from '../../utils/format';
@@ -23,9 +24,12 @@ interface CashFlowEditorProps {
   getProjectedBalance?: (date: string) => number;
   balances?: Map<string, number>;
   selectedMonth?: string;
+  getTransferLink?: (transferId: string) => string;
+  onTransferEdit?: (transferId: string) => void;
+  onTransferDelete?: (transferId: string) => void;
 }
 
-export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntries = [], getProjectedBalance, balances, selectedMonth }: CashFlowEditorProps) {
+export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntries = [], getProjectedBalance, balances, selectedMonth, getTransferLink, onTransferEdit, onTransferDelete }: CashFlowEditorProps) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<FormMode>({ status: 'idle' });
   const [form, setForm] = useState(INITIAL_FORM);
@@ -60,6 +64,8 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
       }
     }
 
+    const existingCf = mode.status === 'editing' ? cashFlows.find((cf) => cf.id === mode.id) : undefined;
+
     const cashFlow: CashFlow = {
       id: mode.status === 'editing' ? mode.id : crypto.randomUUID(),
       date: form.date,
@@ -71,6 +77,7 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
           ...(form.endDate ? { endDate: form.endDate } : {}),
         },
       } : {}),
+      ...(existingCf?.transferId ? { transferId: existingCf.transferId } : {}),
     };
 
     const updated = mode.status === 'editing'
@@ -255,8 +262,11 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
             }
             const cf = entry.cf;
             const cfBal = balances?.get(cf.date);
-            return (
-              <div key={cf.id} className="cashflow-item">
+            const isTransfer = !!cf.transferId;
+            const transferLink = isTransfer && getTransferLink ? getTransferLink(cf.transferId!) : null;
+
+            const content = (
+              <>
                 <span className="cashflow-item__date">{formatDate(cf.date)}</span>
                 <span className="cashflow-item__desc">
                   {cf.description}
@@ -265,27 +275,76 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
                       {recurringOptions.find((o) => o.value === cf.recurring!.intervalMonths)?.label ?? t('cashflow.recurring')}
                     </span>
                   )}
+                  {isTransfer && (
+                    <span className="cashflow-item__badge cashflow-item__badge--transfer">{t('transfer.badge')}</span>
+                  )}
                 </span>
                 <span className={`cashflow-item__amount${cf.amount >= 0 ? ' cashflow-item__amount--deposit' : ' cashflow-item__amount--withdrawal'}`}>
                   {cf.amount >= 0 ? '+' : '\u2212'}{formatCurrency(Math.abs(cf.amount), currency)}
                 </span>
                 {cfBal != null && <span className="cashflow-item__balance">{formatCurrency(cfBal, currency)}</span>}
-                <button
-                  className="btn-icon btn-icon--edit"
-                  title={t('cashflow.edit')}
-                  onClick={() => handleEdit(cf)}
-                  aria-label={t('cashflow.editTransaction', { description: cf.description })}
+                {isTransfer ? (
+                  <>
+                    {onTransferEdit && (
+                      <button
+                        className="btn-icon btn-icon--edit"
+                        title={t('cashflow.edit')}
+                        onClick={(e) => { e.preventDefault(); onTransferEdit(cf.transferId!); }}
+                        aria-label={t('transfer.editTransfer')}
+                      >
+                        <PencilIcon aria-hidden="true" />
+                      </button>
+                    )}
+                    {onTransferDelete && (
+                      <button
+                        className="btn-icon"
+                        title={t('cashflow.delete')}
+                        onClick={(e) => { e.preventDefault(); onTransferDelete(cf.transferId!); }}
+                        aria-label={t('transfer.deleteTransfer')}
+                      >
+                        <XMarkIcon aria-hidden="true" />
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="btn-icon btn-icon--edit"
+                      title={t('cashflow.edit')}
+                      onClick={() => handleEdit(cf)}
+                      aria-label={t('cashflow.editTransaction', { description: cf.description })}
+                    >
+                      <PencilIcon aria-hidden="true" />
+                    </button>
+                    <button
+                      className="btn-icon"
+                      title={t('cashflow.delete')}
+                      onClick={() => handleRemove(cf.id)}
+                      aria-label={t('cashflow.deleteTransaction', { description: cf.description })}
+                    >
+                      <XMarkIcon aria-hidden="true" />
+                    </button>
+                  </>
+                )}
+              </>
+            );
+
+            if (transferLink) {
+              return (
+                <Link
+                  key={cf.id}
+                  to={transferLink}
+                  className="cashflow-item cashflow-item--transfer cashflow-item--link"
+                  aria-label={t('transfer.goToCounterAccount')}
                 >
-                  <PencilIcon aria-hidden="true" />
-                </button>
-                <button
-                  className="btn-icon"
-                  title={t('cashflow.delete')}
-                  onClick={() => handleRemove(cf.id)}
-                  aria-label={t('cashflow.deleteTransaction', { description: cf.description })}
-                >
-                  <XMarkIcon aria-hidden="true" />
-                </button>
+                  {content}
+                </Link>
+              );
+            }
+
+            return (
+              <div key={cf.id} className={`cashflow-item${isTransfer ? ' cashflow-item--transfer' : ''}`}>
+                {content}
               </div>
             );
           })}

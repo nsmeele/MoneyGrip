@@ -3,6 +3,7 @@ import { PayoutInterval } from '../enums/PayoutInterval';
 import { InterestType } from '../enums/InterestType';
 import { DayCountConvention } from '../enums/DayCountConvention';
 import type { AccountType } from '../enums/AccountType';
+import type { NoticePeriodUnit } from '../enums/NoticePeriodUnit';
 import { type CashFlow, expandCashFlows } from './CashFlow';
 import type { RateChange } from './RateChange';
 import { addMonthsToISO, todayISO, isBeforeDate, addDayISO, getNextMonthStart, getNextBoundaryStart, INTERVAL_BOUNDARIES, toMonthKey, daysBetween } from '../utils/date';
@@ -41,6 +42,9 @@ export class BankAccount {
     public readonly currency?: string,
     public readonly accountType?: AccountType,
     public readonly hasCashFlows: boolean = true,
+    public readonly noticePeriodValue?: number,
+    public readonly noticePeriodUnit?: NoticePeriodUnit,
+    public readonly processingDays?: number,
   ) {
     this.id = crypto.randomUUID();
     this.timestamp = Date.now();

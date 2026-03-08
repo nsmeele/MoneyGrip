@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router';
-import { ArrowLeftIcon, PencilIcon, XMarkIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, PencilIcon, XMarkIcon, ChevronRightIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline';
 import { useAccountStore } from '../../context/useAccountStore';
@@ -11,6 +11,7 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { InterestType, getInterestTypeLabel } from '../../enums/InterestType';
 import { PayoutInterval, getIntervalLabel } from '../../enums/PayoutInterval';
 import { getDayCountLabel, getDayCountDescription } from '../../enums/DayCountConvention';
+import { getNoticePeriodUnitLabel } from '../../enums/NoticePeriodUnit';
 import { getAccountTypeLabel } from '../../enums/AccountType';
 import type { Currency } from '../../enums/Currency';
 import { formatCurrency, formatDuration, formatDate, formatRate } from '../../utils/format';
@@ -26,6 +27,8 @@ import AccountBalanceChart from '../../components/AccountBalanceChart';
 import { getMaxRangeForAccount, getRangeEndYear } from '../../utils/chartRange';
 import { ChartYearRange } from '../../enums/ChartYearRange';
 import { extendOngoingAccount } from '../../utils/extendOngoingAccount';
+import { useTransfer } from '../../context/useTransfer';
+import TransferModal from '../../components/TransferModal';
 import { APP_NAME } from '../../constants/app';
 import './AccountDetailPage.css';
 
@@ -41,11 +44,13 @@ export default function AccountDetailPage() {
     handleUpdateCashFlows, handleUpdateRateChanges,
   } = useAccountStore();
   const { openModal } = useModal();
-
+  const { transfers, getTransfersForAccount, deleteTransfer } = useTransfer();
   const account = results.find((r) => r.id === id);
 
   const currentMonthKey = toMonthKey(todayISO());
   const [editorMonthOffset, setEditorMonthOffset] = useState(0);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [editingTransferId, setEditingTransferId] = useState<string | null>(null);
   const [chartStartYear, setChartStartYear] = useState(() => new Date().getFullYear());
   const [chartRangeOverride, setChartRangeOverride] = useState<ChartYearRange | null>(null);
   const chartYearRange = chartRangeOverride ?? ChartYearRange.OneYear;
@@ -126,11 +131,38 @@ export default function AccountDetailPage() {
       message: t('accounts.confirmDeleteMessage'),
       confirmLabel: t('accounts.confirmDeleteButton'),
       onConfirm: () => {
+        // Clean up transfers linked to this account
+        const accountTransfers = getTransfersForAccount(account.id);
+        for (const t of accountTransfers) {
+          deleteTransfer(t.id);
+        }
         removeResult(account.id);
         navigate(`/${lang}`);
       },
     });
   }
+
+  const getTransferLink = useCallback((transferId: string): string => {
+    const transfer = transfers.find((tr) => tr.id === transferId);
+    if (!transfer) return `/${lang}`;
+    const counterAccountId = transfer.sourceAccountId === id ? transfer.targetAccountId : transfer.sourceAccountId;
+    return `/${lang}/account/${counterAccountId}`;
+  }, [transfers, id, lang]);
+
+  const handleTransferEdit = useCallback((transferId: string) => {
+    setEditingTransferId(transferId);
+    setShowTransferModal(true);
+  }, []);
+
+  const handleTransferDelete = useCallback((transferId: string) => {
+    openModal({
+      type: 'confirm',
+      title: t('transfer.confirmDeleteTitle'),
+      message: t('transfer.confirmDeleteMessage'),
+      confirmLabel: t('transfer.confirmDeleteButton'),
+      onConfirm: () => deleteTransfer(transferId),
+    });
+  }, [openModal, t, deleteTransfer]);
 
   if (!account) {
     return (
@@ -180,6 +212,12 @@ export default function AccountDetailPage() {
     properties.push({ label: t('accounts.endAmount'), value: formatCurrency(account.endAmount, cur) });
   }
   properties.push({ label: t('accounts.interestThisMonth'), value: formatCurrency(account.interestThisMonth, cur), info: t('accounts.interestThisMonthInfo'), infoOnLabel: true });
+  if (account.noticePeriodValue) {
+    properties.push({ label: t('transferSettings.noticePeriod'), value: `${account.noticePeriodValue} ${account.noticePeriodUnit ? getNoticePeriodUnitLabel(account.noticePeriodUnit).toLowerCase() : t('transferSettings.daysSuffix')}` });
+  }
+  if (account.processingDays) {
+    properties.push({ label: t('transferSettings.processingDays'), value: `${account.processingDays} ${t('transfer.businessDays')}` });
+  }
 
   const inWindow = (date: string) => {
     const mk = toMonthKey(date);
@@ -273,6 +311,12 @@ export default function AccountDetailPage() {
                 <PencilIcon aria-hidden="true" />
                 {t('accounts.edit')}
               </button>
+              {account.hasCashFlows && results.length > 1 && (
+                <button className="btn-action" onClick={() => setShowTransferModal(true)} aria-label={t('transfer.title')}>
+                  <ArrowsRightLeftIcon aria-hidden="true" />
+                  {t('transfer.title')}
+                </button>
+              )}
               <button
                 className={`btn-action btn-action--muted${inPortfolio ? ' btn-action--portfolio-active' : ''}`}
                 onClick={() => togglePortfolio(account.id)}
@@ -356,6 +400,9 @@ export default function AccountDetailPage() {
                     getProjectedBalance={account.startDate ? getProjectedBalance : undefined}
                     balances={entryBalances}
                     selectedMonth={editorMonthKey}
+                    getTransferLink={getTransferLink}
+                    onTransferEdit={handleTransferEdit}
+                    onTransferDelete={handleTransferDelete}
                   />
                 )}
                 {account.isVariableRate && (
@@ -450,6 +497,14 @@ export default function AccountDetailPage() {
 
         </main>
       </div>
+      {showTransferModal && account && (
+        <TransferModal
+          sourceAccount={account}
+          onClose={() => { setShowTransferModal(false); setEditingTransferId(null); }}
+          getProjectedBalance={account.startDate ? getProjectedBalance : undefined}
+          editingTransfer={editingTransferId ? transfers.find((t) => t.id === editingTransferId) : undefined}
+        />
+      )}
     </div>
   );
 }

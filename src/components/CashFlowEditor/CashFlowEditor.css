@@ -139,6 +139,26 @@
   @apply text-copper-600 bg-copper-100 dark:text-copper-400 dark:bg-copper-500/15;
 }
 
+.cashflow-item__badge--transfer {
+  @apply text-indigo-600 bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-700;
+}
+
+.cashflow-item--transfer {
+  @apply opacity-75;
+}
+
+.cashflow-item--link {
+  @apply no-underline opacity-100 rounded-md;
+}
+
+.cashflow-item--link:hover {
+  @apply bg-indigo-50/60 dark:bg-indigo-900/20;
+}
+
+.cashflow-item--link:focus-visible {
+  @apply outline-2 outline-offset-1 outline-indigo-500 rounded-md;
+}
+
 .btn-icon-spacer {
   @apply w-8 h-8 shrink-0;
 }

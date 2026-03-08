@@ -26,6 +26,7 @@ function recalculate(item: ExportedResult, ongoingDuration?: number): BankAccoun
     item.startAmount, item.annualInterestRate, durationMonths,
     item.interval, item.interestType, item.startDate, cashFlows, isOngoing, dayCount, rateChanges, isVariableRate,
     item.currency, item.accountType, item.hasCashFlows ?? true,
+    item.noticePeriodValue, item.noticePeriodUnit, item.processingDays,
   );
   const result = calc.calculate(input);
 
@@ -58,6 +59,7 @@ function restoreFromStorage(item: StoredResult, ongoingDuration?: number): BankA
     item.interval, item.interestType, item.startDate, item.periods ?? [],
     cashFlows, isOngoing, dayCount, rateChanges, isVariableRate,
     item.currency, item.accountType, item.hasCashFlows ?? true,
+    item.noticePeriodValue, item.noticePeriodUnit, item.processingDays,
   );
 
   Object.assign(result, { id: item.id, timestamp: item.timestamp });

@@ -39,6 +39,7 @@
 - Test-driven-development: schrijf eerst tests, dan pas de implementatie
 - Documenteer belangrijke beslissingen in code comments of in de README
 - Update bestaande comments en documentatie als je code wijzigt, zodat alles up-to-date blijft
+- Gebruik zoveel mogelijk SSOT (Single Source of Truth) voor gedeelde logica of data, zodat er één plek is om te onderhouden
 
 ## Commit rules
 

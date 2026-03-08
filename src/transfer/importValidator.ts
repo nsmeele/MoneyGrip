@@ -3,6 +3,7 @@ import { InterestType } from '../enums/InterestType';
 import { Currency } from '../enums/Currency';
 import { DayCountConvention } from '../enums/DayCountConvention';
 import { AccountType } from '../enums/AccountType';
+import { NoticePeriodUnit } from '../enums/NoticePeriodUnit';
 import { EXPORT_FORMAT_VERSION } from '../models/ExportFile';
 import type { ExportFile, ExportedResult } from '../models/ExportFile';
 
@@ -15,6 +16,7 @@ const INTEREST_TYPE_VALUES = Object.values(InterestType) as string[];
 const CURRENCY_VALUES = Object.values(Currency) as string[];
 const DAY_COUNT_VALUES = Object.values(DayCountConvention) as string[];
 const ACCOUNT_TYPE_VALUES = Object.values(AccountType) as string[];
+const NOTICE_PERIOD_UNIT_VALUES = Object.values(NoticePeriodUnit) as string[];
 const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -37,6 +39,10 @@ function validateCashFlow(value: unknown, index: number): string | null {
   if (typeof cf.date !== 'string' || !ISO_DATE_REGEX.test(cf.date)) return `Kasbeweging ${index + 1}: 'date' is geen geldige datum (YYYY-MM-DD).`;
   if (!isFiniteNumber(cf.amount) || cf.amount === 0) return `Kasbeweging ${index + 1}: 'amount' moet een getal ongelijk aan 0 zijn.`;
   if (typeof cf.description !== 'string') return `Kasbeweging ${index + 1}: 'description' is geen tekst.`;
+
+  if (cf.transferId !== undefined && !isNonEmptyString(cf.transferId)) {
+    return `Kasbeweging ${index + 1}: 'transferId' moet een tekst zijn.`;
+  }
 
   if (cf.recurring !== undefined) {
     if (!isObject(cf.recurring)) return `Kasbeweging ${index + 1}: 'recurring' is geen geldig object.`;
@@ -113,6 +119,18 @@ function validateExportedResult(value: unknown, index: number): string | null {
 
   if (r.accountType !== undefined && (typeof r.accountType !== 'string' || !ACCOUNT_TYPE_VALUES.includes(r.accountType))) {
     return `Rekening ${index + 1}: 'accountType' heeft een ongeldige waarde '${r.accountType}'.`;
+  }
+
+  if (r.noticePeriodValue !== undefined && (!isFiniteNumber(r.noticePeriodValue) || r.noticePeriodValue < 0)) {
+    return `Rekening ${index + 1}: 'noticePeriodValue' moet >= 0 zijn.`;
+  }
+
+  if (r.noticePeriodUnit !== undefined && (typeof r.noticePeriodUnit !== 'string' || !NOTICE_PERIOD_UNIT_VALUES.includes(r.noticePeriodUnit))) {
+    return `Rekening ${index + 1}: 'noticePeriodUnit' heeft een ongeldige waarde '${r.noticePeriodUnit}'.`;
+  }
+
+  if (r.processingDays !== undefined && (!isFiniteNumber(r.processingDays) || r.processingDays < 0 || !Number.isInteger(r.processingDays))) {
+    return `Rekening ${index + 1}: 'processingDays' moet een geheel getal >= 0 zijn.`;
   }
 
   if (r.rateChanges !== undefined) {

@@ -4,6 +4,24 @@ import { PayoutInterval } from '../enums/PayoutInterval';
 import { InterestType } from '../enums/InterestType';
 import { DayCountConvention } from '../enums/DayCountConvention';
 import { AccountType } from '../enums/AccountType';
+import { NoticePeriodUnit } from '../enums/NoticePeriodUnit';
+import type { MoneyTransfer } from '../models/MoneyTransfer';
+
+export const demoTransfers: MoneyTransfer[] = [
+  {
+    id: 'transfer-demo-001',
+    sourceAccountId: 'demo-0001-0001-0001-000000000001',
+    targetAccountId: 'demo-0001-0001-0001-000000000002',
+    sourceCashFlowId: 'cf-1c',
+    targetCashFlowId: 'cf-2d',
+    amount: 1500,
+    initiationDate: '2026-01-01',
+    withdrawalDate: '2026-02-04',
+    depositDate: '2026-02-06',
+    description: 'Overboeking',
+    createdAt: 1741305600000,
+  },
+];
 
 export const demoData: ExportFile = {
   version: EXPORT_FORMAT_VERSION,
@@ -33,6 +51,7 @@ export const demoData: ExportFile = {
       cashFlows: [
         { id: 'cf-1a', date: '2025-11-01', amount: 500, description: 'Storting' },
         { id: 'cf-1b', date: '2026-01-15', amount: -1000, description: 'Opname' },
+        { id: 'cf-1c', date: '2026-02-04', amount: -1500, description: 'Overboeking naar spaarrekening', transferId: 'transfer-demo-001' },
       ],
       rateChanges: [
         { id: 'rc-1a', date: '2025-12-01', annualInterestRate: 1.2 },
@@ -42,6 +61,9 @@ export const demoData: ExportFile = {
       isVariableRate: true,
       dayCount: DayCountConvention.NOM_12,
       accountType: AccountType.Savings,
+      noticePeriodValue: 33,
+      noticePeriodUnit: NoticePeriodUnit.Days,
+      processingDays: 2,
     },
     {
       id: 'demo-0001-0001-0001-000000000002',
@@ -57,10 +79,12 @@ export const demoData: ExportFile = {
         { id: 'cf-2a', date: '2025-07-01', amount: 200, description: 'Maandelijkse inleg', recurring: { intervalMonths: 1 } },
         { id: 'cf-2b', date: '2025-10-01', amount: 500, description: 'Kwartaalstorting', recurring: { intervalMonths: 3 } },
         { id: 'cf-2c', date: '2025-12-01', amount: -2000, description: 'Opname' },
+        { id: 'cf-2d', date: '2026-02-06', amount: 1500, description: 'Overboeking van spaarrekening', transferId: 'transfer-demo-001' },
       ],
       isOngoing: true,
       dayCount: DayCountConvention.NOM_12,
       accountType: AccountType.Savings,
+      processingDays: 1,
     },
     {
       id: 'demo-0001-0001-0001-000000000003',

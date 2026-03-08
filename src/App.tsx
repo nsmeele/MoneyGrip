@@ -25,9 +25,11 @@ import {
     ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import type {BankAccount} from './models/BankAccount';
-import {demoData} from './transfer/demoData';
+import {demoData, demoTransfers} from './transfer/demoData';
 import {ModalProvider} from './context/ModalContext';
 import {ReinvestmentProvider} from './context/ReinvestmentProvider';
+import {TransferProvider} from './context/TransferProvider';
+import {useTransfer} from './context/useTransfer';
 import {APP_NAME, GITHUB_URL} from './constants/app';
 import {useDocumentMeta} from './hooks/useDocumentMeta';
 
@@ -40,11 +42,13 @@ export default function App() {
                 <AccountStoreProvider>
                     <ModalProvider>
                         <ReinvestmentProvider>
-                            <Routes>
-                                <Route path="account/:id" element={<AccountDetailPage/>}/>
-                                <Route path="reinvest" element={<ReinvestmentPage/>}/>
-                                <Route path="*" element={<AppContent/>}/>
-                            </Routes>
+                            <TransferProvider>
+                                <Routes>
+                                    <Route path="account/:id" element={<AccountDetailPage/>}/>
+                                    <Route path="reinvest" element={<ReinvestmentPage/>}/>
+                                    <Route path="*" element={<AppContent/>}/>
+                                </Routes>
+                            </TransferProvider>
                         </ReinvestmentProvider>
                     </ModalProvider>
                 </AccountStoreProvider>
@@ -63,7 +67,8 @@ function AppContent() {
         portfolioIds, togglePortfolio, clearPortfolio,
         replacePortfolio, mergePortfolio,
     } = useAccountStore();
-    const transfer = useDataTransfer(results, portfolioIds, replaceResults, mergeResults, replacePortfolio, mergePortfolio);
+    const { transfers, replaceTransfers, mergeTransfers } = useTransfer();
+    const transfer = useDataTransfer(results, portfolioIds, replaceResults, mergeResults, replacePortfolio, mergePortfolio, transfers, replaceTransfers, mergeTransfers);
     const {openModal} = useModal();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dataMenuRef = useRef<HTMLDivElement>(null);
@@ -143,6 +148,7 @@ function AppContent() {
     function handleLoadDemo() {
         replaceResults(demoData.results);
         replacePortfolio(demoData.portfolioIds);
+        replaceTransfers(demoTransfers);
     }
 
     return (

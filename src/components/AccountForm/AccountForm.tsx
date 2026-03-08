@@ -7,6 +7,7 @@ import { InterestType, getInterestTypeLabel } from '../../enums/InterestType';
 import { DayCountConvention, getDayCountLabel, getDayCountDescription } from '../../enums/DayCountConvention';
 import { AccountType, getAccountTypeLabel } from '../../enums/AccountType';
 import { ACCOUNT_PRESETS, ACCOUNT_RESTRICTIONS } from '../../presets/accountPresets';
+import { NoticePeriodUnit, getNoticePeriodUnitLabel } from '../../enums/NoticePeriodUnit';
 import { BankAccountInput } from '../../models/BankAccountInput';
 import { AccountCalculator } from '../../calculator/AccountCalculator';
 import { useLocale } from '../../context/useLocale';
@@ -27,6 +28,7 @@ const intervals = Object.values(PayoutInterval);
 const interestTypes = Object.values(InterestType);
 const dayCountOptions = Object.values(DayCountConvention);
 const accountTypes = Object.values(AccountType);
+const noticePeriodUnits = Object.values(NoticePeriodUnit);
 
 interface FormState {
   accountCurrency: Currency | '';
@@ -44,6 +46,9 @@ interface FormState {
   hasCashFlows: boolean;
   useCustomEndDate: boolean;
   accountType: AccountType | '';
+  noticePeriodValue: string;
+  noticePeriodUnit: NoticePeriodUnit;
+  processingDays: string;
   errors: Record<string, string>;
 }
 
@@ -64,6 +69,9 @@ function createInitialForm(globalCurrency: Currency): FormState {
     hasCashFlows: true,
     useCustomEndDate: false,
     accountType: AccountType.Savings,
+    noticePeriodValue: '',
+    noticePeriodUnit: NoticePeriodUnit.Days,
+    processingDays: '',
     errors: {},
   };
 }
@@ -106,6 +114,9 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
       hasCashFlows: editingResult.hasCashFlows,
       accountCurrency: (editingResult.currency as Currency) ?? '',
       accountType: editingResult.accountType ?? '',
+      noticePeriodValue: editingResult.noticePeriodValue?.toString() ?? '',
+      noticePeriodUnit: editingResult.noticePeriodUnit ?? NoticePeriodUnit.Days,
+      processingDays: editingResult.processingDays?.toString() ?? '',
       errors: {},
     });
   }
@@ -183,7 +194,11 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
       ? Math.max(1, Math.ceil(daysBetween(form.startDate, endOfMonthISO(todayISO())) / 30.44) + 12)
       : hasDurationFromDates ? durationFromDates : parseInt(form.years) * 12 + parseInt(form.months || '0');
 
-    const input = new BankAccountInput(amount, rate, durationMonths, form.interval, form.interestType, form.startDate || undefined, form.hasCashFlows ? (editingResult?.cashFlows ?? []) : [], form.isOngoing, form.dayCount, form.isVariableRate ? (editingResult?.rateChanges ?? []) : [], form.isVariableRate, form.accountCurrency || undefined, form.accountType || undefined, form.hasCashFlows);
+    const noticePeriodValue = parseInt(form.noticePeriodValue) || undefined;
+    const noticePeriodUnit = noticePeriodValue ? form.noticePeriodUnit : undefined;
+    const processingDays = parseInt(form.processingDays) || undefined;
+
+    const input = new BankAccountInput(amount, rate, durationMonths, form.interval, form.interestType, form.startDate || undefined, form.hasCashFlows ? (editingResult?.cashFlows ?? []) : [], form.isOngoing, form.dayCount, form.isVariableRate ? (editingResult?.rateChanges ?? []) : [], form.isVariableRate, form.accountCurrency || undefined, form.accountType || undefined, form.hasCashFlows, noticePeriodValue, noticePeriodUnit, processingDays);
     const result = calculator.calculate(input);
     onResult(result);
   }
@@ -509,6 +524,63 @@ export default function AccountForm({ onResult, editingResult, onCancelEdit }: A
                     ))}
                   </select>
                 </div>
+
+                <fieldset className="form-fieldset">
+                  <legend className="form-label">
+                    {t('transferSettings.title')} {t('form.optional')}
+                  </legend>
+
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="noticePeriodValue">
+                      {t('transferSettings.noticePeriod')}
+                      <span className="form-hint">{t('transferSettings.noticePeriodHint')}</span>
+                    </label>
+                    <div className="form-row">
+                      <div className="form-input-suffix">
+                        <input
+                          id="noticePeriodValue"
+                          type="number"
+                          min="0"
+                          className="form-input"
+                          value={form.noticePeriodValue}
+                          onChange={(e) => updateForm({ noticePeriodValue: e.target.value })}
+                          placeholder="0"
+                        />
+                        <span className="suffix">{form.noticePeriodUnit === NoticePeriodUnit.Months ? t('form.monthsSuffix') : t('transferSettings.daysSuffix')}</span>
+                      </div>
+                      <select
+                        id="noticePeriodUnit"
+                        className="form-input"
+                        value={form.noticePeriodUnit}
+                        onChange={(e) => updateForm({ noticePeriodUnit: e.target.value as NoticePeriodUnit })}
+                        aria-label={t('transferSettings.noticePeriodUnit')}
+                      >
+                        {noticePeriodUnits.map((u) => (
+                          <option key={u} value={u}>{getNoticePeriodUnitLabel(u)}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="processingDays">
+                      {t('transferSettings.processingDays')}
+                      <span className="form-hint">{t('transferSettings.processingDaysHint')}</span>
+                    </label>
+                    <div className="form-input-suffix">
+                      <input
+                        id="processingDays"
+                        type="number"
+                        min="0"
+                        className="form-input"
+                        value={form.processingDays}
+                        onChange={(e) => updateForm({ processingDays: e.target.value })}
+                        placeholder="0"
+                      />
+                      <span className="suffix">{t('transferSettings.businessDaysSuffix')}</span>
+                    </div>
+                  </div>
+                </fieldset>
               </div>
             )}
 

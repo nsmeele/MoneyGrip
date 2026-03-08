@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import type { BankAccount } from '../models/BankAccount';
 import type { ExportFile, ExportedResult } from '../models/ExportFile';
+import type { MoneyTransfer } from '../models/MoneyTransfer';
 import { serializeToExportFile } from '../transfer/dataSerializer';
 import { downloadJson, readJsonFile } from '../transfer/fileIO';
 import { validateExportFile } from '../transfer/importValidator';
@@ -20,15 +21,18 @@ export function useDataTransfer(
   mergeResults: (results: ExportedResult[]) => void,
   replacePortfolio: (ids: string[]) => void,
   mergePortfolio: (ids: string[]) => void,
+  transfers: MoneyTransfer[] = [],
+  replaceTransfers?: (transfers: MoneyTransfer[]) => void,
+  mergeTransfers?: (transfers: MoneyTransfer[]) => void,
 ) {
   const [pendingImport, setPendingImport] = useState<ImportPreview | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
 
   const handleExport = useCallback(() => {
-    const exportFile = serializeToExportFile(results, portfolioIds);
+    const exportFile = serializeToExportFile(results, portfolioIds, transfers);
     const date = new Date().toISOString().slice(0, 10);
     downloadJson(exportFile, `moneygrip-export-${date}.json`);
-  }, [results, portfolioIds]);
+  }, [results, portfolioIds, transfers]);
 
   const handleFileSelected = useCallback(async (file: File) => {
     setImportError(null);
@@ -56,19 +60,21 @@ export function useDataTransfer(
   const handleConfirmImport = useCallback((mode: ImportMode) => {
     if (!pendingImport) return;
 
-    const { results: importedResults, portfolioIds: importedPortfolioIds } = pendingImport.file;
+    const { results: importedResults, portfolioIds: importedPortfolioIds, transfers: importedTransfers } = pendingImport.file;
 
     if (mode === 'replace') {
       replaceResults(importedResults);
       replacePortfolio(importedPortfolioIds);
+      replaceTransfers?.(importedTransfers ?? []);
     } else {
       mergeResults(importedResults);
       mergePortfolio(importedPortfolioIds);
+      mergeTransfers?.(importedTransfers ?? []);
     }
 
     setPendingImport(null);
     setImportError(null);
-  }, [pendingImport, replaceResults, mergeResults, replacePortfolio, mergePortfolio]);
+  }, [pendingImport, replaceResults, mergeResults, replacePortfolio, mergePortfolio, replaceTransfers, mergeTransfers]);
 
   const handleCancelImport = useCallback(() => {
     setPendingImport(null);

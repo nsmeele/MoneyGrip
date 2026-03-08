@@ -30,6 +30,7 @@ export function AccountStoreProvider({ children }: { children: ReactNode }) {
       cashFlows, existing.isOngoing, existing.dayCount,
       existing.rateChanges, existing.isVariableRate, existing.currency,
       existing.accountType, existing.hasCashFlows,
+      existing.noticePeriodValue, existing.noticePeriodUnit, existing.processingDays,
     );
     updateResult(id, calc.calculate(input));
   }, [results, updateResult]);
@@ -45,6 +46,7 @@ export function AccountStoreProvider({ children }: { children: ReactNode }) {
       existing.cashFlows, existing.isOngoing, existing.dayCount,
       rateChanges, existing.isVariableRate, existing.currency,
       existing.accountType, existing.hasCashFlows,
+      existing.noticePeriodValue, existing.noticePeriodUnit, existing.processingDays,
     );
     updateResult(id, calc.calculate(input));
   }, [results, updateResult]);

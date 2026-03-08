@@ -9,6 +9,7 @@ export interface CashFlow {
     intervalMonths: number;
     endDate?: string;
   };
+  transferId?: string;
 }
 
 export interface ExpandedCashFlow {
