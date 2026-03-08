@@ -34,7 +34,12 @@ export const demoData: ExportFile = {
         { id: 'cf-1a', date: '2025-11-01', amount: 500, description: 'Storting' },
         { id: 'cf-1b', date: '2026-01-15', amount: -1000, description: 'Opname' },
       ],
+      rateChanges: [
+        { id: 'rc-1a', date: '2025-12-01', annualInterestRate: 1.2 },
+        { id: 'rc-1b', date: '2026-03-01', annualInterestRate: 1.05 },
+      ],
       isOngoing: true,
+      isVariableRate: true,
       dayCount: DayCountConvention.NOM_12,
       accountType: AccountType.Savings,
     },
@@ -49,8 +54,9 @@ export const demoData: ExportFile = {
       startDate: '2025-05-01',
 
       cashFlows: [
-        { id: 'cf-2a', date: '2025-07-01', amount: 200, description: 'Storting', recurring: { intervalMonths: 1 } },
-        { id: 'cf-2b', date: '2025-12-01', amount: -2000, description: 'Opname' },
+        { id: 'cf-2a', date: '2025-07-01', amount: 200, description: 'Maandelijkse inleg', recurring: { intervalMonths: 1 } },
+        { id: 'cf-2b', date: '2025-10-01', amount: 500, description: 'Kwartaalstorting', recurring: { intervalMonths: 3 } },
+        { id: 'cf-2c', date: '2025-12-01', amount: -2000, description: 'Opname' },
       ],
       isOngoing: true,
       dayCount: DayCountConvention.NOM_12,
@@ -70,7 +76,11 @@ export const demoData: ExportFile = {
         { id: 'cf-3a', date: '2025-06-01', amount: 1000, description: 'Storting' },
         { id: 'cf-3b', date: '2025-10-01', amount: -500, description: 'Opname' },
       ],
+      rateChanges: [
+        { id: 'rc-3a', date: '2025-09-01', annualInterestRate: 1.1 },
+      ],
       isOngoing: true,
+      isVariableRate: true,
       dayCount: DayCountConvention.NOM_12,
       accountType: AccountType.Savings,
     },

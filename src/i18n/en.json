@@ -136,7 +136,10 @@
     "deleteTransaction": "Delete transaction {{description}}",
     "automatic": "automatic",
     "endDate": "End date",
-    "errorExceedsBalance": "Withdrawal exceeds the balance on {{date}}. Maximum available: {{max}}."
+    "errorExceedsBalance": "Withdrawal exceeds the balance on {{date}}. Maximum available: {{max}}.",
+    "edit": "Edit",
+    "save": "Save",
+    "editTransaction": "Edit transaction {{description}}"
   },
   "rateChange": {
     "title": "Rate changes",
@@ -148,7 +151,10 @@
     "delete": "Delete",
     "deleteRateChange": "Delete rate change {{date}}",
     "errorDate": "Select an effective date",
-    "errorRate": "Enter a valid interest rate"
+    "errorRate": "Enter a valid interest rate",
+    "edit": "Edit",
+    "save": "Save",
+    "editRateChange": "Edit rate change {{date}}"
   },
   "portfolio": {
     "title": "Portfolio",

@@ -17,7 +17,7 @@ import { toMonthKey, todayISO, parseDate, addMonthsToISO, addDayISO } from '../.
 import { getMonthDays } from '../../utils/monthDays';
 import CashFlowEditor, { type AutoCashFlow } from '../../components/CashFlowEditor';
 import InfoPopover from '../../components/InfoPopover';
-import { expandCashFlows } from '../../models/CashFlow';
+import { expandCashFlows, getRecurringAutoEntries } from '../../models/CashFlow';
 import { calculateDailyInterest } from '../../utils/dailyInterest';
 import RateChangeEditor from '../../components/RateChangeEditor';
 import AccountBalanceChart from '../../components/AccountBalanceChart';
@@ -126,21 +126,14 @@ export default function AccountDetailPage() {
         .filter((p) => inWindow(p.date))
     : [];
 
-  const recurringCashFlows: AutoCashFlow[] = account.cashFlows
-    .filter((cf) => cf.recurring)
-    .flatMap((cf) => {
-      const endISO = account.endDate ?? addMonthsToISO(account.startDate!, account.durationMonths);
-      return expandCashFlows([cf], endISO)
-        .filter((e) => inWindow(e.date))
-        .map((e) => ({ date: e.date, amount: e.amount, description: cf.description }));
-    });
+  const endISO = account.endDate ?? (account.startDate ? addMonthsToISO(account.startDate, account.durationMonths) : '');
+  const recurringAutoEntries = getRecurringAutoEntries(account.cashFlows, endISO, inWindow);
 
-  const autoEntries = [...compoundPayouts, ...recurringCashFlows];
+  const autoEntries = [...compoundPayouts, ...recurringAutoEntries];
 
   const getProjectedBalance = (targetDate: string): number => {
     if (!account.startDate || account.periods.length === 0) return account.startAmount;
 
-    const endISO = account.endDate ?? addMonthsToISO(account.startDate, account.durationMonths);
     const allCashFlows = expandCashFlows(account.cashFlows, endISO);
 
     for (let i = 0; i < account.periods.length; i++) {
@@ -168,7 +161,7 @@ export default function AccountDetailPage() {
   const entryBalances = new Map<string, number>();
   if (account.startDate) {
     const dates = new Set<string>();
-    for (const cf of account.cashFlows.filter((cf) => !cf.recurring)) dates.add(cf.date);
+    for (const cf of account.cashFlows) dates.add(cf.date);
     for (const ae of autoEntries) dates.add(ae.date);
     for (const date of dates) {
       entryBalances.set(date, getProjectedBalance(addDayISO(date)));
@@ -277,8 +270,8 @@ export default function AccountDetailPage() {
             <section className="detail-editors">
               {account.hasCashFlows && (
                 <CashFlowEditor
-                  cashFlows={account.cashFlows.filter((cf) => !cf.recurring)}
-                  onUpdate={(cfs) => handleUpdateCashFlows(account.id, [...cfs, ...account.cashFlows.filter((cf) => cf.recurring)])}
+                  cashFlows={account.cashFlows}
+                  onUpdate={(cfs) => handleUpdateCashFlows(account.id, cfs)}
                   currency={cur}
                   autoEntries={autoEntries}
                   getProjectedBalance={account.startDate ? getProjectedBalance : undefined}

@@ -479,6 +479,10 @@ body {
   @apply inline-flex items-center justify-center w-9 h-9 p-0 text-sm bg-transparent border-none rounded-lg cursor-pointer text-navy-400 transition-all duration-200 hover:text-danger hover:bg-danger-light active:scale-95;
 }
 
+.btn-icon--edit {
+  @apply hover:text-navy-600 hover:bg-navy-100 dark:hover:text-navy-200 dark:hover:bg-navy-700;
+}
+
 .btn-portfolio {
   @apply inline-flex items-center justify-center w-9 h-9 p-0 bg-transparent border-none rounded-lg cursor-pointer text-navy-400 text-sm transition-all duration-200 hover:text-copper-500 hover:bg-copper-100 active:scale-90 dark:hover:text-copper-400 dark:hover:bg-copper-500/15;
 }

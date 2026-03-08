@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, XMarkIcon, PencilIcon } from '@heroicons/react/24/outline';
 import type { CashFlow } from '../../models/CashFlow';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { CURRENCY_SYMBOLS, type Currency } from '../../enums/Currency';
+import { INITIAL_FORM, cashFlowToFormState } from './cashFlowFormState';
+import type { FormMode } from '../../types/FormMode';
 import './CashFlowEditor.css';
 
 export interface AutoCashFlow {
@@ -21,15 +23,9 @@ interface CashFlowEditorProps {
   balances?: Map<string, number>;
 }
 
-const INITIAL_FORM = {
-  isWithdrawal: false, date: '', amount: '', description: '',
-  isRecurring: false, intervalMonths: 1, endDate: '',
-  amountError: '',
-};
-
 export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntries = [], getProjectedBalance, balances }: CashFlowEditorProps) {
   const { t } = useTranslation();
-  const [isAdding, setIsAdding] = useState(false);
+  const [mode, setMode] = useState<FormMode>({ status: 'idle' });
   const [form, setForm] = useState(INITIAL_FORM);
 
   const recurringOptions = [
@@ -39,11 +35,16 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
     { value: 12, label: t('cashflow.recurringAnnually') },
   ];
 
-  function handleAdd() {
+  function handleEdit(cf: CashFlow) {
+    setForm(cashFlowToFormState(cf));
+    setMode({ status: 'editing', id: cf.id });
+  }
+
+  function handleSubmit() {
     const parsedAmount = parseFloat(form.amount.replace(',', '.'));
     if (!form.date || isNaN(parsedAmount) || parsedAmount <= 0) return;
 
-    if (form.isWithdrawal && !form.isRecurring && getProjectedBalance) {
+    if (form.isWithdrawal && !form.isRecurring && getProjectedBalance && mode.status !== 'editing') {
       const available = getProjectedBalance(form.date);
       if (parsedAmount > available) {
         setForm((prev) => ({
@@ -57,8 +58,8 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
       }
     }
 
-    const newCashFlow: CashFlow = {
-      id: crypto.randomUUID(),
+    const cashFlow: CashFlow = {
+      id: mode.status === 'editing' ? mode.id : crypto.randomUUID(),
       date: form.date,
       amount: form.isWithdrawal ? -parsedAmount : parsedAmount,
       description: form.description || (form.isWithdrawal ? t('cashflow.withdrawalType') : t('cashflow.depositType')),
@@ -70,9 +71,13 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
       } : {}),
     };
 
-    onUpdate([...cashFlows, newCashFlow].sort((a, b) => a.date.localeCompare(b.date)));
+    const updated = mode.status === 'editing'
+      ? cashFlows.map((cf) => cf.id === mode.id ? cashFlow : cf)
+      : [...cashFlows, cashFlow];
+
+    onUpdate(updated.sort((a, b) => a.date.localeCompare(b.date)));
     setForm(INITIAL_FORM);
-    setIsAdding(false);
+    setMode({ status: 'idle' });
   }
 
   function handleRemove(id: string) {
@@ -97,14 +102,21 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
       <div className="cashflow-editor__header">
         <h3>{t('cashflow.title')}</h3>
         <button
-          className={`cashflow-editor__add-btn${isAdding ? ' cashflow-editor__add-btn--active' : ''}`}
-          onClick={() => { setIsAdding(!isAdding); if (isAdding) setForm(INITIAL_FORM); }}
+          className={`cashflow-editor__add-btn${mode.status === 'adding' ? ' cashflow-editor__add-btn--active' : ''}`}
+          onClick={() => {
+            if (mode.status === 'idle') {
+              setMode({ status: 'adding' });
+            } else {
+              setForm(INITIAL_FORM);
+              setMode({ status: 'idle' });
+            }
+          }}
         >
-          {isAdding ? t('cashflow.cancel') : <><PlusIcon aria-hidden="true" /> {t('cashflow.add')}</>}
+          {mode.status !== 'idle' ? t('cashflow.cancel') : <><PlusIcon aria-hidden="true" /> {t('cashflow.add')}</>}
         </button>
       </div>
 
-      {isAdding && (
+      {mode.status !== 'idle' && (
         <div className="cashflow-editor__form">
           <div className="cashflow-editor__type-toggle">
             <button
@@ -201,15 +213,15 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
             <button
               type="button"
               className="cashflow-editor__submit"
-              onClick={handleAdd}
+              onClick={handleSubmit}
             >
-              {t('cashflow.add')}
+              {mode.status === 'editing' ? t('cashflow.save') : t('cashflow.add')}
             </button>
           </div>
         </div>
       )}
 
-      {allEntries.length === 0 && !isAdding && (
+      {allEntries.length === 0 && mode.status === 'idle' && (
         <div className="cashflow-editor__empty">{t('cashflow.empty')}</div>
       )}
 
@@ -231,6 +243,7 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
                   </span>
                   {bal != null && <span className="cashflow-item__balance">{formatCurrency(bal, currency)}</span>}
                   <span className="btn-icon-spacer" />
+                  <span className="btn-icon-spacer" />
                 </div>
               );
             }
@@ -251,6 +264,14 @@ export default function CashFlowEditor({ cashFlows, onUpdate, currency, autoEntr
                   {cf.amount >= 0 ? '+' : '\u2212'}{formatCurrency(Math.abs(cf.amount), currency)}
                 </span>
                 {cfBal != null && <span className="cashflow-item__balance">{formatCurrency(cfBal, currency)}</span>}
+                <button
+                  className="btn-icon btn-icon--edit"
+                  title={t('cashflow.edit')}
+                  onClick={() => handleEdit(cf)}
+                  aria-label={t('cashflow.editTransaction', { description: cf.description })}
+                >
+                  <PencilIcon aria-hidden="true" />
+                </button>
                 <button
                   className="btn-icon"
                   title={t('cashflow.delete')}

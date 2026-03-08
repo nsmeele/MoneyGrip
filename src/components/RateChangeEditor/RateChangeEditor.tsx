@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, XMarkIcon, PencilIcon } from '@heroicons/react/24/outline';
 import type { RateChange } from '../../models/RateChange';
 import { formatDate, formatRate } from '../../utils/format';
 import type { Currency } from '../../enums/Currency';
+import { INITIAL_FORM, rateChangeToFormState } from './rateChangeFormState';
+import type { FormMode } from '../../types/FormMode';
 import './RateChangeEditor.css';
 
 interface RateChangeEditorProps {
@@ -12,11 +14,9 @@ interface RateChangeEditorProps {
   onUpdate: (rateChanges: RateChange[]) => void;
 }
 
-const INITIAL_FORM = { date: '', rate: '', errors: {} as Record<string, string> };
-
 export default function RateChangeEditor({ rateChanges, currency, onUpdate }: RateChangeEditorProps) {
   const { t } = useTranslation();
-  const [isAdding, setIsAdding] = useState(false);
+  const [mode, setMode] = useState<FormMode>({ status: 'idle' });
   const [form, setForm] = useState(INITIAL_FORM);
 
   function updateField(field: string, value: string) {
@@ -26,7 +26,12 @@ export default function RateChangeEditor({ rateChanges, currency, onUpdate }: Ra
     });
   }
 
-  function handleAdd(e: React.FormEvent) {
+  function handleEdit(rc: RateChange) {
+    setForm(rateChangeToFormState(rc));
+    setMode({ status: 'editing', id: rc.id });
+  }
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errors: Record<string, string> = {};
     if (!form.date) errors.date = t('rateChange.errorDate');
@@ -34,15 +39,19 @@ export default function RateChangeEditor({ rateChanges, currency, onUpdate }: Ra
     if (!form.rate || isNaN(parsedRate) || parsedRate < 0) errors.rate = t('rateChange.errorRate');
     if (Object.keys(errors).length > 0) { setForm((prev) => ({ ...prev, errors })); return; }
 
-    const newRateChange: RateChange = {
-      id: crypto.randomUUID(),
+    const rateChange: RateChange = {
+      id: mode.status === 'editing' ? mode.id : crypto.randomUUID(),
       date: form.date,
       annualInterestRate: parsedRate,
     };
 
-    onUpdate([...rateChanges, newRateChange].sort((a, b) => a.date.localeCompare(b.date)));
+    const updated = mode.status === 'editing'
+      ? rateChanges.map((rc) => rc.id === mode.id ? rateChange : rc)
+      : [...rateChanges, rateChange];
+
+    onUpdate(updated.sort((a, b) => a.date.localeCompare(b.date)));
     setForm(INITIAL_FORM);
-    setIsAdding(false);
+    setMode({ status: 'idle' });
   }
 
   function handleRemove(id: string) {
@@ -56,15 +65,22 @@ export default function RateChangeEditor({ rateChanges, currency, onUpdate }: Ra
       <div className="rate-change-editor__header">
         <h3>{t('rateChange.title')}</h3>
         <button
-          className={`rate-change-editor__add-btn${isAdding ? ' rate-change-editor__add-btn--active' : ''}`}
-          onClick={() => { setIsAdding(!isAdding); if (isAdding) setForm(INITIAL_FORM); }}
+          className={`rate-change-editor__add-btn${mode.status === 'adding' ? ' rate-change-editor__add-btn--active' : ''}`}
+          onClick={() => {
+            if (mode.status === 'idle') {
+              setMode({ status: 'adding' });
+            } else {
+              setForm(INITIAL_FORM);
+              setMode({ status: 'idle' });
+            }
+          }}
         >
-          {isAdding ? t('rateChange.cancel') : <><PlusIcon aria-hidden="true" /> {t('rateChange.add')}</>}
+          {mode.status !== 'idle' ? t('rateChange.cancel') : <><PlusIcon aria-hidden="true" /> {t('rateChange.add')}</>}
         </button>
       </div>
 
-      {isAdding && (
-        <form className="rate-change-editor__form" onSubmit={handleAdd}>
+      {mode.status !== 'idle' && (
+        <form className="rate-change-editor__form" onSubmit={handleSubmit}>
           <div className="rate-change-editor__fields">
             <div>
               <label className="form-label" htmlFor="rc-date">{t('rateChange.effectiveDate')}</label>
@@ -100,13 +116,13 @@ export default function RateChangeEditor({ rateChanges, currency, onUpdate }: Ra
               type="submit"
               className="rate-change-editor__submit"
             >
-              {t('rateChange.add')}
+              {mode.status === 'editing' ? t('rateChange.save') : t('rateChange.add')}
             </button>
           </div>
         </form>
       )}
 
-      {sorted.length === 0 && !isAdding && (
+      {sorted.length === 0 && mode.status === 'idle' && (
         <div className="rate-change-editor__empty">{t('rateChange.empty')}</div>
       )}
 
@@ -116,6 +132,14 @@ export default function RateChangeEditor({ rateChanges, currency, onUpdate }: Ra
             <div key={rc.id} className="rate-change-item">
               <span className="rate-change-item__date">{formatDate(rc.date)}</span>
               <span className="rate-change-item__rate">{formatRate(rc.annualInterestRate, currency)}%</span>
+              <button
+                className="btn-icon btn-icon--edit"
+                title={t('rateChange.edit')}
+                onClick={() => handleEdit(rc)}
+                aria-label={t('rateChange.editRateChange', { date: formatDate(rc.date) })}
+              >
+                <PencilIcon aria-hidden="true" />
+              </button>
               <button
                 className="btn-icon"
                 title={t('rateChange.delete')}

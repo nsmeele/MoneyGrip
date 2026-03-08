@@ -17,6 +17,26 @@ export interface ExpandedCashFlow {
   sourceId?: string;
 }
 
+export interface RecurringAutoEntry {
+  date: string;
+  amount: number;
+  description: string;
+}
+
+export function getRecurringAutoEntries(
+  cashFlows: CashFlow[],
+  endDate: string,
+  inWindow?: (date: string) => boolean,
+): RecurringAutoEntry[] {
+  return cashFlows
+    .filter((cf) => cf.recurring)
+    .flatMap((cf) =>
+      expandCashFlows([cf], endDate)
+        .filter((e) => e.date !== cf.date && (inWindow ? inWindow(e.date) : true))
+        .map((e) => ({ date: e.date, amount: e.amount, description: cf.description })),
+    );
+}
+
 export function expandCashFlows(
   cashFlows: CashFlow[],
   endDate: string,

@@ -136,7 +136,10 @@
     "deleteTransaction": "Verwijder transactie {{description}}",
     "automatic": "automatisch",
     "endDate": "Einddatum",
-    "errorExceedsBalance": "Opname overschrijdt het saldo op {{date}}. Maximaal beschikbaar: {{max}}."
+    "errorExceedsBalance": "Opname overschrijdt het saldo op {{date}}. Maximaal beschikbaar: {{max}}.",
+    "edit": "Bewerken",
+    "save": "Opslaan",
+    "editTransaction": "Bewerk transactie {{description}}"
   },
   "rateChange": {
     "title": "Rentewijzigingen",
@@ -148,7 +151,10 @@
     "delete": "Verwijderen",
     "deleteRateChange": "Verwijder rentewijziging {{date}}",
     "errorDate": "Kies een ingangsdatum",
-    "errorRate": "Vul een geldig rentepercentage in"
+    "errorRate": "Vul een geldig rentepercentage in",
+    "edit": "Bewerken",
+    "save": "Opslaan",
+    "editRateChange": "Bewerk rentewijziging {{date}}"
   },
   "portfolio": {
     "title": "Portefeuille",
