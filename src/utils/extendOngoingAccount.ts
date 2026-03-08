@@ -22,5 +22,9 @@ export function extendOngoingAccount(account: BankAccount, endYear: number): Ban
     account.rateChanges, account.isVariableRate, account.currency,
     account.accountType, account.hasCashFlows,
   );
-  return calculator.calculate(input);
+  const extended = calculator.calculate(input);
+  // Preserve identity from the original account
+  Object.defineProperty(extended, 'id', { value: account.id });
+  Object.defineProperty(extended, 'timestamp', { value: account.timestamp });
+  return extended;
 }

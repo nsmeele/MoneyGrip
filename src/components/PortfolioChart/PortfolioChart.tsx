@@ -1,4 +1,4 @@
-import { useId, useMemo, useCallback, useRef } from 'react';
+import { useId, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ReferenceDot, ResponsiveContainer } from 'recharts';
 import type { BankAccount } from '../../models/BankAccount';
@@ -65,18 +65,11 @@ export default function PortfolioChart({ items, viewMode = 'accrued', selectedMo
     return map;
   }, [data]);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleContainerClick = useCallback((event: React.MouseEvent) => {
-    if (!onMonthSelect || data.length === 0 || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const relativeX = event.clientX - rect.left;
-    const fraction = relativeX / rect.width;
-    const index = Math.round(fraction * (data.length - 1));
-    const clamped = Math.max(0, Math.min(data.length - 1, index));
-    const point = data[clamped];
-    if (point) onMonthSelect(point.monthKey);
-  }, [onMonthSelect, data]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleChartClick = useCallback((state: any) => {
+    if (!onMonthSelect || !state?.activeLabel) return;
+    onMonthSelect(state.activeLabel as string);
+  }, [onMonthSelect]);
 
   if (data.length === 0) return null;
 
@@ -90,9 +83,9 @@ export default function PortfolioChart({ items, viewMode = 'accrued', selectedMo
   return (
     <section className="portfolio-chart" aria-label={t('portfolio.chartAriaLabel')}>
       <ChartRangeSelector startYear={startYear} onStartYearChange={onStartYearChange} value={yearRange} onChange={onRangeChange} minYear={minYear} />
-      <div className="portfolio-chart__container" ref={containerRef} onClick={handleContainerClick}>
+      <div className="portfolio-chart__container">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+          <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }} onClick={handleChartClick}>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={colors.stroke} stopOpacity={0.3} />

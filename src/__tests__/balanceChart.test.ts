@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { buildBalanceData, formatPeriodLabel } from '../utils/balanceChart';
 import { BankAccount } from '../models/BankAccount';
 import { PayoutInterval } from '../enums/PayoutInterval';
@@ -6,14 +6,14 @@ import { InterestType } from '../enums/InterestType';
 import type { PeriodResult } from '../models/BankAccount';
 
 function makePeriods(
-  entries: { endDate: string; endBalance?: number; interestEarned?: number }[],
+  entries: { endDate: string; endBalance?: number; interestEarned?: number; disbursed?: number }[],
 ): PeriodResult[] {
   return entries.map((e, i) => ({
     period: i + 1,
     periodLabel: `Periode ${i + 1}`,
     startBalance: 10000,
     interestEarned: e.interestEarned ?? 50,
-    disbursed: 0,
+    disbursed: e.disbursed ?? 0,
     endBalance: e.endBalance ?? 10000,
     deposited: 0,
     endDate: e.endDate,
@@ -39,8 +39,6 @@ function makeAccount(
 }
 
 describe('buildBalanceData', () => {
-  afterEach(() => { vi.useRealTimers(); });
-
   it('returns empty array when account has no startDate', () => {
     const account = makeAccount(
       makePeriods([{ endDate: '2026-02-01' }]),
@@ -54,7 +52,7 @@ describe('buildBalanceData', () => {
     expect(buildBalanceData(account, 2026, 2026)).toEqual([]);
   });
 
-  it('includes all periods within range', () => {
+  it('produces 12 data points for a 1-year range', () => {
     const periods = makePeriods([
       { endDate: '2026-03-01' },
       { endDate: '2026-06-01' },
@@ -63,11 +61,12 @@ describe('buildBalanceData', () => {
     ]);
     const account = makeAccount(periods);
     const data = buildBalanceData(account, 2026, 2026);
-    // 1 start point + 4 periods
-    expect(data).toHaveLength(5);
+    expect(data).toHaveLength(12);
+    expect(data[0].label).toBe(formatPeriodLabel('2026-01-01'));
+    expect(data[11].label).toBe(formatPeriodLabel('2026-12-01'));
   });
 
-  it('excludes periods past end year', () => {
+  it('produces 24 data points for a 2-year range', () => {
     const periods = makePeriods([
       { endDate: '2026-06-01' },
       { endDate: '2026-12-01' },
@@ -75,95 +74,102 @@ describe('buildBalanceData', () => {
       { endDate: '2027-12-01' },
     ]);
     const account = makeAccount(periods);
-    const data = buildBalanceData(account, 2026, 2026);
-    // 1 start point + 2 periods within 2026
-    expect(data).toHaveLength(3);
+    const data = buildBalanceData(account, 2026, 2027);
+    expect(data).toHaveLength(24);
   });
 
-  it('includes period on exactly December 31 of end year', () => {
+  it('shows null balance for months before account start', () => {
     const periods = makePeriods([
-      { endDate: '2026-06-30' },
-      { endDate: '2026-12-31' },
-      { endDate: '2027-06-30' },
-    ]);
-    const account = makeAccount(periods);
-    const data = buildBalanceData(account, 2026, 2026);
-    // 1 start point + 2 periods (June 30 + Dec 31)
-    expect(data).toHaveLength(3);
-  });
-
-  it('shows account started before range start year', () => {
-    const periods = makePeriods([
-      { endDate: '2025-06-01' },
-      { endDate: '2025-12-01' },
-      { endDate: '2026-06-01' },
+      { endDate: '2026-09-01' },
       { endDate: '2026-12-01' },
-      { endDate: '2027-06-01' },
+    ]);
+    const account = makeAccount(periods, { startDate: '2026-06-15' });
+    const data = buildBalanceData(account, 2026, 2026);
+    expect(data).toHaveLength(12);
+    // Jan–May: before account start → null
+    for (let i = 0; i < 5; i++) {
+      expect(data[i].balance).toBeNull();
+    }
+    // June: account start month → startAmount
+    expect(data[5].balance).toBe(10000);
+  });
+
+  it('shows opening balance when account started before range', () => {
+    const periods = makePeriods([
+      { endDate: '2025-06-01', endBalance: 10500 },
+      { endDate: '2025-12-01', endBalance: 11000 },
+      { endDate: '2026-06-01', endBalance: 11500 },
     ]);
     const account = makeAccount(periods, { startDate: '2025-01-01' });
     const data = buildBalanceData(account, 2026, 2026);
-    // 1 opening balance point + 2 periods within 2026
-    expect(data).toHaveLength(3);
+    expect(data[0].label).toBe(formatPeriodLabel('2026-01-01'));
+    // Opening balance = endBalance of last period before range (2025-12-01)
+    expect(data[0].balance).toBe(11000);
   });
 
-  it('accumulates cumulativeInterest for simple interest', () => {
+  it('uses endBalance + cumulative disbursed for simple interest', () => {
     const periods = makePeriods([
-      { endDate: '2026-06-01', endBalance: 10000, interestEarned: 100 },
-      { endDate: '2026-12-01', endBalance: 10000, interestEarned: 100 },
+      { endDate: '2026-02-01', endBalance: 10000, disbursed: 100 },
+      { endDate: '2026-03-01', endBalance: 10000, disbursed: 100 },
     ]);
     const account = makeAccount(periods, { interestType: InterestType.Simple });
     const data = buildBalanceData(account, 2026, 2026);
+    // Jan: start month = startAmount
     expect(data[0].balance).toBe(10000);
-    expect(data[1].balance).toBe(10100); // endBalance + 100
-    expect(data[2].balance).toBe(10200); // endBalance + 200
+    // Feb: endBalance + cumulative disbursed (100)
+    expect(data[1].balance).toBe(10100);
+    // Mar: endBalance + cumulative disbursed (200)
+    expect(data[2].balance).toBe(10200);
   });
 
-  it('does not add cumulativeInterest for compound interest', () => {
+  it('does not add cumulative disbursed for compound interest', () => {
     const periods = makePeriods([
-      { endDate: '2026-06-01', endBalance: 10100, interestEarned: 100 },
-      { endDate: '2026-12-01', endBalance: 10200, interestEarned: 100 },
+      { endDate: '2026-02-01', endBalance: 10100, disbursed: 100 },
+      { endDate: '2026-03-01', endBalance: 10200, disbursed: 100 },
     ]);
     const account = makeAccount(periods, { interestType: InterestType.Compound });
     const data = buildBalanceData(account, 2026, 2026);
+    // Compound: just endBalance, no cumulative disbursed
     expect(data[1].balance).toBe(10100);
     expect(data[2].balance).toBe(10200);
   });
 
-  it('uses break optimization — stops at first period past end year', () => {
+  it('carries forward last known balance for months without period data', () => {
     const periods = makePeriods([
-      { endDate: '2026-06-01' },
-      { endDate: '2027-01-01' },
-      { endDate: '2027-06-01' },
+      { endDate: '2026-03-01', endBalance: 10500 },
     ]);
-    const account = makeAccount(periods);
+    const account = makeAccount(periods, { isOngoing: true });
     const data = buildBalanceData(account, 2026, 2026);
-    // 1 start + 1 period (only 2026-06-01)
-    expect(data).toHaveLength(2);
+    // Mar: period data
+    expect(data[2].balance).toBe(10500);
+    // Apr–Dec: carry forward
+    for (let i = 3; i < 12; i++) {
+      expect(data[i].balance).toBe(10500);
+    }
   });
 
-  it('returns only start point when all periods are past end year', () => {
+  it('stops line after account end for non-ongoing accounts', () => {
     const periods = makePeriods([
-      { endDate: '2028-06-01' },
-      { endDate: '2028-12-01' },
+      { endDate: '2026-03-01', endBalance: 10500 },
     ]);
-    const account = makeAccount(periods);
+    const account = makeAccount(periods, { isOngoing: false });
     const data = buildBalanceData(account, 2026, 2026);
-    // Only the start point
-    expect(data).toHaveLength(1);
+    // Mar: last period month
+    expect(data[2].balance).toBe(10500);
+    // Apr onwards: null (account ended)
+    for (let i = 3; i < 12; i++) {
+      expect(data[i].balance).toBeNull();
+    }
   });
 
-  it('includes periods across multiple years with wider range', () => {
+  it('ongoing account continues line past last period', () => {
     const periods = makePeriods([
-      { endDate: '2026-06-01' },
-      { endDate: '2026-12-01' },
-      { endDate: '2027-06-01' },
-      { endDate: '2027-12-01' },
-      { endDate: '2028-06-01' },
+      { endDate: '2026-03-01', endBalance: 10500 },
     ]);
-    const account = makeAccount(periods);
-    const data = buildBalanceData(account, 2026, 2028);
-    // 1 start point + 5 periods (all within 2026-2028)
-    expect(data).toHaveLength(6);
+    const account = makeAccount(periods, { isOngoing: true });
+    const data = buildBalanceData(account, 2026, 2026);
+    // All months after Mar still have balance
+    expect(data[11].balance).toBe(10500);
   });
 });
 
@@ -176,19 +182,21 @@ describe('buildBalanceData start and end dates', () => {
     const account = makeAccount(periods, { startDate: '2026-01-01' });
     const data = buildBalanceData(account, 2026, 2026);
     expect(data[0].label).toBe(formatPeriodLabel('2026-01-01'));
+    expect(data[0].balance).toBe(10000);
   });
 
-  it('starts axis at Jan 1 with zero balance when account started mid-year', () => {
+  it('null balance before mid-year account start', () => {
     const periods = makePeriods([
-      { endDate: '2026-09-15' },
-      { endDate: '2026-12-15' },
+      { endDate: '2026-09-01' },
+      { endDate: '2026-12-01' },
     ]);
     const account = makeAccount(periods, { startDate: '2026-06-15' });
     const data = buildBalanceData(account, 2026, 2026);
+    expect(data).toHaveLength(12);
     expect(data[0].label).toBe(formatPeriodLabel('2026-01-01'));
     expect(data[0].balance).toBeNull();
-    expect(data[1].label).toBe(formatPeriodLabel('2026-06-15'));
-    expect(data[1].balance).toBe(10000);
+    // June (index 5) is account start month
+    expect(data[5].balance).toBe(10000);
   });
 
   it('starts at range start when account started before range', () => {
@@ -199,47 +207,21 @@ describe('buildBalanceData start and end dates', () => {
     ]);
     const account = makeAccount(periods, { startDate: '2025-01-01' });
     const data = buildBalanceData(account, 2026, 2026);
-    // Opening label should be Jan 1 of startYear
     expect(data[0].label).toBe(formatPeriodLabel('2026-01-01'));
   });
 
-  it('ends at last period within end year', () => {
+  it('last data point is Dec of end year', () => {
     const periods = makePeriods([
       { endDate: '2026-06-01' },
       { endDate: '2026-12-01' },
       { endDate: '2027-06-01' },
     ]);
-    const account = makeAccount(periods);
+    const account = makeAccount(periods, { isOngoing: true });
     const data = buildBalanceData(account, 2026, 2026);
     expect(data[data.length - 1].label).toBe(formatPeriodLabel('2026-12-01'));
   });
 
-  it('ends at Dec 31 when period falls exactly on boundary', () => {
-    const periods = makePeriods([
-      { endDate: '2026-06-30' },
-      { endDate: '2026-12-31' },
-      { endDate: '2027-06-30' },
-    ]);
-    const account = makeAccount(periods);
-    const data = buildBalanceData(account, 2026, 2026);
-    expect(data[data.length - 1].label).toBe(formatPeriodLabel('2026-12-31'));
-  });
-
-  it('ongoing account with 1J range: starts at Jan 1, ends within current year', () => {
-    vi.setSystemTime(new Date('2026-03-08'));
-    const periods = makePeriods([
-      { endDate: '2026-06-01' },
-      { endDate: '2026-12-01' },
-      { endDate: '2027-06-01' },
-      { endDate: '2027-12-01' },
-    ]);
-    const account = makeAccount(periods, { startDate: '2026-01-01', isOngoing: true });
-    const data = buildBalanceData(account, 2026, 2026);
-    expect(data[0].label).toBe(formatPeriodLabel('2026-01-01'));
-    expect(data[data.length - 1].label).toBe(formatPeriodLabel('2026-12-01'));
-  });
-
-  it('extending range from 1J to 3J includes more periods', () => {
+  it('extending range from 1J to 3J produces more data points', () => {
     const periods = makePeriods([
       { endDate: '2026-06-01' },
       { endDate: '2026-12-01' },
@@ -248,11 +230,10 @@ describe('buildBalanceData start and end dates', () => {
       { endDate: '2028-06-01' },
       { endDate: '2028-12-01' },
     ]);
-    const account = makeAccount(periods);
+    const account = makeAccount(periods, { isOngoing: true });
     const data1J = buildBalanceData(account, 2026, 2026);
     const data3J = buildBalanceData(account, 2026, 2028);
-    expect(data1J[data1J.length - 1].label).toBe(formatPeriodLabel('2026-12-01'));
-    expect(data3J[data3J.length - 1].label).toBe(formatPeriodLabel('2028-12-01'));
-    expect(data3J.length).toBeGreaterThan(data1J.length);
+    expect(data1J).toHaveLength(12);
+    expect(data3J).toHaveLength(36);
   });
 });
