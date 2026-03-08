@@ -204,7 +204,7 @@ export default function PortfolioSummary({ results, portfolioIds, onToggle }: Po
             >
               <div className="portfolio-item-info">
                 <span className="portfolio-item-label">
-                  {formatAccountLabel(r.currentBalance, r.annualInterestRate, cur)}
+                  {formatAccountLabel(r.effectiveBalance, r.annualInterestRate, cur)}
                   <span className="badge-interval">{getIntervalLabel(r.interval)}</span>
                   {status === 'expired' && <span className="badge-expired">{t('portfolio.expired')}</span>}
                   {status === 'upcoming' && <span className="badge-upcoming">{t('portfolio.upcoming')}</span>}

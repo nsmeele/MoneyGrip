@@ -74,13 +74,23 @@ export class BankAccount {
     return this.periods.reduce((sum, p) => sum + (p.deposited ?? 0), 0);
   }
 
+  get effectiveBalance(): number {
+    return this.interestType === InterestType.Compound
+      ? this.currentBalance + this.disbursedToDate
+      : this.currentBalance;
+  }
+
   get currentBalance(): number {
     if (this.cashFlows.length === 0) return this.startAmount;
     if (!this.startDate) {
       return this.startAmount + this.cashFlows.reduce((sum, cf) => sum + cf.amount, 0);
     }
     const endISO = addMonthsToISO(this.startDate, this.durationMonths);
-    return this.startAmount + expandCashFlows(this.cashFlows, endISO).reduce((sum, cf) => sum + cf.amount, 0);
+    const today = todayISO();
+    const cutoff = endISO < today ? endISO : today;
+    return this.startAmount + expandCashFlows(this.cashFlows, endISO)
+      .filter((cf) => cf.date <= cutoff)
+      .reduce((sum, cf) => sum + cf.amount, 0);
   }
 
   get endDate(): string | undefined {

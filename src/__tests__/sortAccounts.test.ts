@@ -73,10 +73,10 @@ describe('sortAccounts', () => {
   });
 
   describe('compound interest balance includes disbursedToDate', () => {
-    it('uses currentBalance + disbursedToDate for compound accounts', () => {
+    it('uses effectiveBalance for sorting', () => {
       const simple = makeAccount({ startAmount: 10000, rate: 4, interestType: InterestType.Simple });
       const compound = makeAccount({ startAmount: 8000, rate: 4, interestType: InterestType.Compound });
-      // Both have no periods, so disbursedToDate = 0, currentBalance = startAmount
+      // Both have no periods, so disbursedToDate = 0, effectiveBalance = startAmount
       // simple: 10000, compound: 8000 + 0 = 8000
       const sort: SortState = { column: 'balance', direction: 'asc' };
       const result = sortAccounts([simple, compound], sort);

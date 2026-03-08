@@ -6,7 +6,7 @@ import { InformationCircleIcon, PlusIcon, ChevronDownIcon, ChevronUpDownIcon, Pe
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline';
 import type { BankAccount } from '../../models/BankAccount';
-import { InterestType, getInterestTypeLabel } from '../../enums/InterestType';
+import { getInterestTypeLabel } from '../../enums/InterestType';
 import { getIntervalLabel } from '../../enums/PayoutInterval';
 import type { Currency } from '../../enums/Currency';
 import { formatCurrency, formatDurationShort, formatDate, formatRate } from '../../utils/format';
@@ -212,7 +212,7 @@ export default function BankAccountsOverview({ results, onRemove, portfolioIds, 
                   role="link"
                 >
                   <td className="amount">
-                    {formatCurrency(r.interestType === InterestType.Compound ? r.currentBalance + r.disbursedToDate : r.currentBalance, cur)}
+                    {formatCurrency(r.effectiveBalance, cur)}
                     <span className="comparison-rate">@ {formatRate(r.annualInterestRate, cur)}%</span>
                   </td>
                   <td>

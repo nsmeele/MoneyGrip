@@ -80,9 +80,7 @@ export default function AccountDetailPage() {
   }
 
   const cur = (account.currency as Currency | undefined) ?? globalCurrency;
-  const balance = account.interestType === InterestType.Compound
-    ? account.currentBalance + account.disbursedToDate
-    : account.currentBalance;
+  const balance = account.effectiveBalance;
   const inPortfolio = portfolioIds.has(account.id);
 
   const properties: { label: string; value: string; highlight?: boolean; badge?: string; info?: string; infoOnLabel?: boolean }[] = [];
