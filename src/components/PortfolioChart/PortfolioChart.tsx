@@ -9,7 +9,9 @@ import { formatCurrency } from '../../utils/format';
 import { useLocale } from '../../context/useLocale';
 import { DEFAULT_CURRENCY } from '../../enums/Currency';
 import { useTheme } from '../../hooks/useTheme';
+import { useContainerWidth } from '../../hooks/useContainerWidth';
 import { getChartColors } from '../../utils/chartColors';
+import { getTickInterval, formatCompactCurrency } from '../../utils/chartAxis';
 import ChartRangeSelector from '../ChartRangeSelector';
 import './PortfolioChart.css';
 
@@ -55,6 +57,7 @@ export default function PortfolioChart({ items, viewMode = 'accrued', selectedMo
   const gradientId = useId();
   const base = getChartColors();
   const colors = portfolioColors[theme];
+  const [containerRef, containerWidth] = useContainerWidth();
   const endYear = getRangeEndYear(startYear, yearRange);
   const data = useMemo(() => {
     const raw = buildPortfolioChartData(items, viewMode);
@@ -75,8 +78,7 @@ export default function PortfolioChart({ items, viewMode = 'accrued', selectedMo
 
   if (data.length === 0) return null;
 
-  const maxLabelCount = 12;
-  const tickInterval = data.length <= maxLabelCount ? 0 : Math.ceil(data.length / maxLabelCount) - 1;
+  const tickInterval = getTickInterval(data.length, containerWidth);
 
   const selectedPoint = selectedMonthKey
     ? data.find((d) => d.monthKey === selectedMonthKey)
@@ -85,7 +87,7 @@ export default function PortfolioChart({ items, viewMode = 'accrued', selectedMo
   return (
     <section className="portfolio-chart" aria-label={t('portfolio.chartAriaLabel')}>
       <ChartRangeSelector startYear={startYear} onStartYearChange={onStartYearChange} value={yearRange} onChange={onRangeChange} minYear={minYear} />
-      <div className="chart-container">
+      <div className="chart-container" ref={containerRef}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }} onClick={handleChartClick}>
             <defs>
@@ -107,7 +109,7 @@ export default function PortfolioChart({ items, viewMode = 'accrued', selectedMo
               tick={{ fontSize: 10, fill: base.tick }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v: number) => formatCurrency(Math.round(v), globalCurrency)}
+              tickFormatter={(v: number) => formatCompactCurrency(Math.round(v), globalCurrency)}
             />
             <Tooltip content={<ChartTooltip currency={globalCurrency} />} />
             <Area

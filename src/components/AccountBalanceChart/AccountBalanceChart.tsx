@@ -5,9 +5,11 @@ import type { BankAccount } from '../../models/BankAccount';
 import type { ChartYearRange } from '../../enums/ChartYearRange';
 import { formatCurrency } from '../../utils/format';
 import { useTheme } from '../../hooks/useTheme';
+import { useContainerWidth } from '../../hooks/useContainerWidth';
 import { getChartColors } from '../../utils/chartColors';
 import { buildBalanceData } from '../../utils/balanceChart';
 import { getRangeEndYear } from '../../utils/chartRange';
+import { getTickInterval, formatCompactCurrency } from '../../utils/chartAxis';
 import ChartRangeSelector from '../ChartRangeSelector';
 import './AccountBalanceChart.css';
 
@@ -57,6 +59,7 @@ export default function AccountBalanceChart({ account, currency, startYear, onSt
   const gradientId = useId();
   const base = getChartColors();
   const balance = balanceColors[theme];
+  const [containerRef, containerWidth] = useContainerWidth();
   const endYear = getRangeEndYear(startYear, yearRange);
   const data = useMemo(() => buildBalanceData(account, startYear, endYear), [account, startYear, endYear]);
 
@@ -69,15 +72,14 @@ export default function AccountBalanceChart({ account, currency, startYear, onSt
   const yMin = Math.floor((minBalance - padding) / 100) * 100;
   const yMax = Math.ceil((maxBalance + padding) / 100) * 100;
 
-  const maxLabelCount = 12;
-  const tickInterval = data.length <= maxLabelCount ? 0 : Math.ceil(data.length / maxLabelCount) - 1;
+  const tickInterval = getTickInterval(data.length, containerWidth);
 
   return (
     <section className="card account-chart" aria-label={t('detail.chartLabel')}>
       <h2 className="card-title">{t('detail.chartLabel')}</h2>
       <ChartRangeSelector startYear={startYear} onStartYearChange={onStartYearChange} value={yearRange} onChange={onRangeChange} maxRange={maxRange} availableYears={availableYears} minYear={minYear} />
-      <div className="chart-container" key={`${yMin}-${yMax}`}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="chart-container" ref={containerRef}>
+        <ResponsiveContainer width="100%" height="100%" key={`${yMin}-${yMax}`}>
           <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -98,7 +100,7 @@ export default function AccountBalanceChart({ account, currency, startYear, onSt
               tick={{ fontSize: 10, fill: base.tick }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v: number) => formatCurrency(Math.round(v), currency)}
+              tickFormatter={(v: number) => formatCompactCurrency(Math.round(v), currency)}
             />
             <Tooltip content={
               <ChartTooltip

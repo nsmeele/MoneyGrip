@@ -11,7 +11,9 @@ import { formatCurrency } from '../../utils/format';
 import { useLocale } from '../../context/useLocale';
 import { DEFAULT_CURRENCY } from '../../enums/Currency';
 import { useTheme } from '../../hooks/useTheme';
+import { useContainerWidth } from '../../hooks/useContainerWidth';
 import { getChartColors } from '../../utils/chartColors';
+import { getTickInterval, formatCompactCurrency } from '../../utils/chartAxis';
 import ChartRangeSelector from '../ChartRangeSelector';
 import './DistributionChart.css';
 
@@ -71,6 +73,7 @@ export default function DistributionChart({ items, events, allocations, startYea
   const { theme } = useTheme();
   const base = getChartColors();
   const colors = distributionColors[theme];
+  const [containerRef, containerWidth] = useContainerWidth();
   const endYear = getRangeEndYear(startYear, yearRange);
 
   const data = useMemo(
@@ -78,18 +81,21 @@ export default function DistributionChart({ items, events, allocations, startYea
     [items, startYear, endYear, events, allocations],
   );
 
+  const labelMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const d of data) map.set(d.monthKey, d.label);
+    return map;
+  }, [data]);
+
   if (data.length === 0) return null;
 
-  const maxLabelCount = 12;
-  const tickInterval = data.length <= maxLabelCount ? 0 : Math.ceil(data.length / maxLabelCount) - 1;
-
-  const labelMap = new Map(data.map((d) => [d.monthKey, d.label]));
+  const tickInterval = getTickInterval(data.length, containerWidth);
 
   return (
     <section className="distribution-chart" aria-label={t('reinvest.distribution.chartAriaLabel')}>
       <h2 className="distribution-chart__title">{t('reinvest.distribution.title')}</h2>
       <ChartRangeSelector startYear={startYear} onStartYearChange={onStartYearChange} value={yearRange} onChange={onRangeChange} minYear={minYear} />
-      <div className="chart-container">
+      <div className="chart-container" ref={containerRef}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={base.grid} vertical={false} />
@@ -105,7 +111,7 @@ export default function DistributionChart({ items, events, allocations, startYea
               tick={{ fontSize: 10, fill: base.tick }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v: number) => formatCurrency(v, globalCurrency)}
+              tickFormatter={(v: number) => formatCompactCurrency(v, globalCurrency)}
             />
             <Tooltip content={<ChartTooltip currency={globalCurrency} />} />
             <Legend
